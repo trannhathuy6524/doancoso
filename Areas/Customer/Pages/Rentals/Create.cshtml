@@ -107,7 +107,7 @@
                     <h5 class="mb-0">Thông tin thuê xe</h5>
                 </div>
                 <div class="card-body">
-                    <form method="post" id="rentalForm">
+                    <form method="post" id="rentalForm" asp-route-id="@Model.Car.Id">
                         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
                         <div class="mb-3">
@@ -125,9 +125,10 @@
                         </div>
                         
                         <div class="d-grid mb-3">
-                            <button type="submit" asp-page-handler="Calculate" formmethod="post" class="btn btn-outline-primary">
+                            <button type="submit" asp-page-handler="Calculate" asp-route-id="@Model.Car.Id" formmethod="post" class="btn btn-outline-primary">
                                 <i class="bi bi-calculator me-2"></i>Tính giá
                             </button>
+
                         </div>
 
                         <div class="mb-3">
