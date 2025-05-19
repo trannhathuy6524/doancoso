@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <Folder Include="Areas\Admin\Pages\Models3D\" />
+    <Folder Include="Data\Migrations\" />
     <Folder Include="wwwroot\models\3d\" />
   </ItemGroup>
 

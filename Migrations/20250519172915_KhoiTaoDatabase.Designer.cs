@@ -9,11 +9,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace GotoCarRental.Data.Migrations
+namespace GotoCarRental.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250428194830_MakeFullNameAndPhoneNumberNull")]
-    partial class MakeFullNameAndPhoneNumberNull
+    [Migration("20250519172915_KhoiTaoDatabase")]
+    partial class KhoiTaoDatabase
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -145,10 +145,18 @@ namespace GotoCarRental.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("DetailedAddress")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
                     b.Property<bool>("IsApproved")
                         .HasColumnType("bit");
 
                     b.Property<bool>("IsAvailable")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
                     b.Property<string>("Name")
@@ -159,11 +167,13 @@ namespace GotoCarRental.Data.Migrations
                     b.Property<decimal>("PricePerDay")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<int?>("ProvinceId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("UserId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
@@ -171,6 +181,8 @@ namespace GotoCarRental.Data.Migrations
                     b.HasIndex("BrandId");
 
                     b.HasIndex("CategoryId");
+
+                    b.HasIndex("ProvinceId");
 
                     b.HasIndex("UserId");
 
@@ -208,6 +220,9 @@ namespace GotoCarRental.Data.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
+                    b.Property<bool>("IsMainImage")
+                        .HasColumnType("bit");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CarId");
@@ -231,6 +246,9 @@ namespace GotoCarRental.Data.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
+                    b.Property<int>("Model3DTemplateId")
+                        .HasColumnType("int");
+
                     b.Property<string>("PreviewImageUrl")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -240,6 +258,8 @@ namespace GotoCarRental.Data.Migrations
 
                     b.HasIndex("CarId")
                         .IsUnique();
+
+                    b.HasIndex("Model3DTemplateId");
 
                     b.ToTable("CarModel3Ds");
                 });
@@ -270,6 +290,11 @@ namespace GotoCarRental.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -278,6 +303,54 @@ namespace GotoCarRental.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Features");
+                });
+
+            modelBuilder.Entity("GotoCarRental.Models.Model3DTemplate", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("BrandId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FileUrl")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("PreviewImageUrl")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BrandId");
+
+                    b.HasIndex("CategoryId");
+
+                    b.ToTable("Model3DTemplates");
                 });
 
             modelBuilder.Entity("GotoCarRental.Models.Payment", b =>
@@ -318,6 +391,409 @@ namespace GotoCarRental.Data.Migrations
                     b.HasIndex("RentalId");
 
                     b.ToTable("Payments");
+                });
+
+            modelBuilder.Entity("GotoCarRental.Models.Province", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Provinces");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Code = "HN",
+                            Name = "Hà Nội"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Code = "HCM",
+                            Name = "Hồ Chí Minh"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Code = "DN",
+                            Name = "Đà Nẵng"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Code = "HP",
+                            Name = "Hải Phòng"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Code = "CT",
+                            Name = "Cần Thơ"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Code = "AG",
+                            Name = "An Giang"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Code = "VT",
+                            Name = "Bà Rịa - Vũng Tàu"
+                        },
+                        new
+                        {
+                            Id = 8,
+                            Code = "BG",
+                            Name = "Bắc Giang"
+                        },
+                        new
+                        {
+                            Id = 9,
+                            Code = "BK",
+                            Name = "Bắc Kạn"
+                        },
+                        new
+                        {
+                            Id = 10,
+                            Code = "BL",
+                            Name = "Bạc Liêu"
+                        },
+                        new
+                        {
+                            Id = 11,
+                            Code = "BN",
+                            Name = "Bắc Ninh"
+                        },
+                        new
+                        {
+                            Id = 12,
+                            Code = "BT",
+                            Name = "Bến Tre"
+                        },
+                        new
+                        {
+                            Id = 13,
+                            Code = "BD",
+                            Name = "Bình Định"
+                        },
+                        new
+                        {
+                            Id = 14,
+                            Code = "BDG",
+                            Name = "Bình Dương"
+                        },
+                        new
+                        {
+                            Id = 15,
+                            Code = "BP",
+                            Name = "Bình Phước"
+                        },
+                        new
+                        {
+                            Id = 16,
+                            Code = "BTH",
+                            Name = "Bình Thuận"
+                        },
+                        new
+                        {
+                            Id = 17,
+                            Code = "CM",
+                            Name = "Cà Mau"
+                        },
+                        new
+                        {
+                            Id = 18,
+                            Code = "CB",
+                            Name = "Cao Bằng"
+                        },
+                        new
+                        {
+                            Id = 19,
+                            Code = "DL",
+                            Name = "Đắk Lắk"
+                        },
+                        new
+                        {
+                            Id = 20,
+                            Code = "DNO",
+                            Name = "Đắk Nông"
+                        },
+                        new
+                        {
+                            Id = 21,
+                            Code = "DB",
+                            Name = "Điện Biên"
+                        },
+                        new
+                        {
+                            Id = 22,
+                            Code = "DNA",
+                            Name = "Đồng Nai"
+                        },
+                        new
+                        {
+                            Id = 23,
+                            Code = "DT",
+                            Name = "Đồng Tháp"
+                        },
+                        new
+                        {
+                            Id = 24,
+                            Code = "GL",
+                            Name = "Gia Lai"
+                        },
+                        new
+                        {
+                            Id = 25,
+                            Code = "HG",
+                            Name = "Hà Giang"
+                        },
+                        new
+                        {
+                            Id = 26,
+                            Code = "HNA",
+                            Name = "Hà Nam"
+                        },
+                        new
+                        {
+                            Id = 27,
+                            Code = "HT",
+                            Name = "Hà Tĩnh"
+                        },
+                        new
+                        {
+                            Id = 28,
+                            Code = "HD",
+                            Name = "Hải Dương"
+                        },
+                        new
+                        {
+                            Id = 29,
+                            Code = "HGI",
+                            Name = "Hậu Giang"
+                        },
+                        new
+                        {
+                            Id = 30,
+                            Code = "HB",
+                            Name = "Hòa Bình"
+                        },
+                        new
+                        {
+                            Id = 31,
+                            Code = "HY",
+                            Name = "Hưng Yên"
+                        },
+                        new
+                        {
+                            Id = 32,
+                            Code = "KH",
+                            Name = "Khánh Hòa"
+                        },
+                        new
+                        {
+                            Id = 33,
+                            Code = "KG",
+                            Name = "Kiên Giang"
+                        },
+                        new
+                        {
+                            Id = 34,
+                            Code = "KT",
+                            Name = "Kon Tum"
+                        },
+                        new
+                        {
+                            Id = 35,
+                            Code = "LC",
+                            Name = "Lai Châu"
+                        },
+                        new
+                        {
+                            Id = 36,
+                            Code = "LD",
+                            Name = "Lâm Đồng"
+                        },
+                        new
+                        {
+                            Id = 37,
+                            Code = "LS",
+                            Name = "Lạng Sơn"
+                        },
+                        new
+                        {
+                            Id = 38,
+                            Code = "LCA",
+                            Name = "Lào Cai"
+                        },
+                        new
+                        {
+                            Id = 39,
+                            Code = "LA",
+                            Name = "Long An"
+                        },
+                        new
+                        {
+                            Id = 40,
+                            Code = "ND",
+                            Name = "Nam Định"
+                        },
+                        new
+                        {
+                            Id = 41,
+                            Code = "NA",
+                            Name = "Nghệ An"
+                        },
+                        new
+                        {
+                            Id = 42,
+                            Code = "NB",
+                            Name = "Ninh Bình"
+                        },
+                        new
+                        {
+                            Id = 43,
+                            Code = "NT",
+                            Name = "Ninh Thuận"
+                        },
+                        new
+                        {
+                            Id = 44,
+                            Code = "PT",
+                            Name = "Phú Thọ"
+                        },
+                        new
+                        {
+                            Id = 45,
+                            Code = "PY",
+                            Name = "Phú Yên"
+                        },
+                        new
+                        {
+                            Id = 46,
+                            Code = "QB",
+                            Name = "Quảng Bình"
+                        },
+                        new
+                        {
+                            Id = 47,
+                            Code = "QNA",
+                            Name = "Quảng Nam"
+                        },
+                        new
+                        {
+                            Id = 48,
+                            Code = "QNG",
+                            Name = "Quảng Ngãi"
+                        },
+                        new
+                        {
+                            Id = 49,
+                            Code = "QNI",
+                            Name = "Quảng Ninh"
+                        },
+                        new
+                        {
+                            Id = 50,
+                            Code = "QT",
+                            Name = "Quảng Trị"
+                        },
+                        new
+                        {
+                            Id = 51,
+                            Code = "ST",
+                            Name = "Sóc Trăng"
+                        },
+                        new
+                        {
+                            Id = 52,
+                            Code = "SL",
+                            Name = "Sơn La"
+                        },
+                        new
+                        {
+                            Id = 53,
+                            Code = "TN",
+                            Name = "Tây Ninh"
+                        },
+                        new
+                        {
+                            Id = 54,
+                            Code = "TB",
+                            Name = "Thái Bình"
+                        },
+                        new
+                        {
+                            Id = 55,
+                            Code = "TNG",
+                            Name = "Thái Nguyên"
+                        },
+                        new
+                        {
+                            Id = 56,
+                            Code = "TH",
+                            Name = "Thanh Hóa"
+                        },
+                        new
+                        {
+                            Id = 57,
+                            Code = "TTH",
+                            Name = "Thừa Thiên Huế"
+                        },
+                        new
+                        {
+                            Id = 58,
+                            Code = "TG",
+                            Name = "Tiền Giang"
+                        },
+                        new
+                        {
+                            Id = 59,
+                            Code = "TV",
+                            Name = "Trà Vinh"
+                        },
+                        new
+                        {
+                            Id = 60,
+                            Code = "TQ",
+                            Name = "Tuyên Quang"
+                        },
+                        new
+                        {
+                            Id = 61,
+                            Code = "VL",
+                            Name = "Vĩnh Long"
+                        },
+                        new
+                        {
+                            Id = 62,
+                            Code = "VP",
+                            Name = "Vĩnh Phúc"
+                        },
+                        new
+                        {
+                            Id = 63,
+                            Code = "YB",
+                            Name = "Yên Bái"
+                        });
                 });
 
             modelBuilder.Entity("GotoCarRental.Models.Rental", b =>
@@ -557,15 +1033,21 @@ namespace GotoCarRental.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("GotoCarRental.Models.Province", "Province")
+                        .WithMany("Cars")
+                        .HasForeignKey("ProvinceId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("GotoCarRental.Models.ApplicationUser", "User")
                         .WithMany("Cars")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Brand");
 
                     b.Navigation("Category");
+
+                    b.Navigation("Province");
 
                     b.Navigation("User");
                 });
@@ -608,7 +1090,34 @@ namespace GotoCarRental.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("GotoCarRental.Models.Model3DTemplate", "Model3DTemplate")
+                        .WithMany()
+                        .HasForeignKey("Model3DTemplateId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Car");
+
+                    b.Navigation("Model3DTemplate");
+                });
+
+            modelBuilder.Entity("GotoCarRental.Models.Model3DTemplate", b =>
+                {
+                    b.HasOne("GotoCarRental.Models.Brand", "Brand")
+                        .WithMany()
+                        .HasForeignKey("BrandId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("GotoCarRental.Models.Category", "Category")
+                        .WithMany()
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Brand");
+
+                    b.Navigation("Category");
                 });
 
             modelBuilder.Entity("GotoCarRental.Models.Payment", b =>
@@ -747,6 +1256,11 @@ namespace GotoCarRental.Data.Migrations
             modelBuilder.Entity("GotoCarRental.Models.Feature", b =>
                 {
                     b.Navigation("CarFeatures");
+                });
+
+            modelBuilder.Entity("GotoCarRental.Models.Province", b =>
+                {
+                    b.Navigation("Cars");
                 });
 
             modelBuilder.Entity("GotoCarRental.Models.Rental", b =>
