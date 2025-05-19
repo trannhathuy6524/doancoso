@@ -405,46 +405,47 @@
                         }
                     </form>
                 </div>
-            </div>
-
-            <!-- Owner Info -->
-            <div class="card shadow-sm mb-4">
-                <div class="card-header bg-light">
-                    <h5 class="mb-0">Thông tin chủ xe</h5>
-                </div>
-                <div class="card-body">
-                    <div class="d-flex align-items-center mb-3">
-                        <div class="flex-shrink-0">
-                            <div class="bg-primary bg-opacity-10 p-2 rounded-circle">
-                                <i class="bi bi-person-circle fs-3 text-primary"></i>
+                <!-- Owner Info -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">Thông tin chủ xe</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="flex-shrink-0">
+                                <div class="bg-primary bg-opacity-10 p-2 rounded-circle">
+                                    <i class="bi bi-person-circle fs-3 text-primary"></i>
+                                </div>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h6 class="mb-0">@Model.Car.User?.FullName</h6>
+                                <p class="text-muted mb-0">Chủ xe</p>
                             </div>
                         </div>
-                        <div class="flex-grow-1 ms-3">
-                            <h6 class="mb-0">@Model.Car.User?.FullName</h6>
-                            <p class="text-muted mb-0">Chủ xe</p>
-                        </div>
-                    </div>
 
-                    @if (Model.Car.Province != null)
-                    {
-                        <div class="mt-2">
-                            <i class="bi bi-geo-alt me-2 text-primary"></i>
-                            <span>@Model.Car.Province.Name</span>
-                            @if (!string.IsNullOrEmpty(Model.Car.DetailedAddress))
-                            {
-                                <p class="text-muted small ms-4">@Model.Car.DetailedAddress</p>
-                            }
-                        </div>
-                    }
+                        @if (Model.Car.Province != null)
+                        {
+                            <div class="mt-2">
+                                <i class="bi bi-geo-alt me-2 text-primary"></i>
+                                <span>@Model.Car.Province.Name</span>
+                                @if (!string.IsNullOrEmpty(Model.Car.DetailedAddress))
+                                {
+                                    <p class="text-muted small ms-4">@Model.Car.DetailedAddress</p>
+                                }
+                            </div>
+                        }
 
-                    <hr>
-                    <div class="text-center">
-                        <a href="#" class="btn btn-outline-primary btn-sm">
-                            <i class="bi bi-chat-dots me-1"></i> Liên hệ chủ xe
-                        </a>
+                        <hr>
+                        <div class="text-center">
+                            <a href="#" class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-chat-dots me-1"></i> Liên hệ chủ xe
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
+
+            
         </div>
     </div>
 </div>

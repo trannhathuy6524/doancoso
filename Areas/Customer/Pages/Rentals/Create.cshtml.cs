@@ -65,7 +65,7 @@ namespace GotoCarRental.Areas.Customer.Pages.Rentals
                 EndDate = StartDate.AddDays(1);
 
             // Tính số ngày thuê
-            Days = (EndDate - StartDate).Days;
+            Days = (EndDate - StartDate).Days + 1;
             if (Days < 1) Days = 1;
 
             // Tính tổng tiền
@@ -135,7 +135,7 @@ namespace GotoCarRental.Areas.Customer.Pages.Rentals
                 return RedirectToPage(new { id });
             }
 
-            Days = (EndDate - StartDate).Days;
+            Days = (EndDate - StartDate).Days + 1;
             if (Days < 1) Days = 1;
 
             Car = await _carRepository.GetByIdAsync(id);

@@ -49,7 +49,7 @@ namespace GotoCarRental.Areas.CarOwner.Pages.Rentals
             Payments = await _rentalRepository.GetPaymentsForRentalAsync(id.Value);
 
             // Tính số ngày thuê
-            RentalDays = (Rental.EndDate - Rental.StartDate).Days;
+            RentalDays = (Rental.EndDate - Rental.StartDate).Days + 1;
 
             // Kiểm tra quyền thao tác với đơn
             CanConfirm = Rental.Status == 0; // Chờ xác nhận

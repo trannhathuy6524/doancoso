@@ -81,8 +81,8 @@ namespace GotoCarRental.Areas.Customer.Pages.Cars
             // Các giá trị mặc định cho đặt xe
             StartDate = DateTime.Today;
             EndDate = DateTime.Today.AddDays(1);
-            Days = 1;
-            TotalPrice = Car.PricePerDay;
+            Days = (int)(EndDate.Value - StartDate.Value).TotalDays + 1; // Thêm +1 ở đây
+            TotalPrice = Car.PricePerDay * Days;
 
             return Page();
         }
@@ -100,7 +100,7 @@ namespace GotoCarRental.Areas.Customer.Pages.Cars
                 return NotFound();
             }
 
-            Days = (int)(EndDate.Value - StartDate.Value).TotalDays;
+            Days = (int)(EndDate.Value - StartDate.Value).TotalDays + 1;
             if (Days < 1) Days = 1;
 
             TotalPrice = Car.PricePerDay * Days;

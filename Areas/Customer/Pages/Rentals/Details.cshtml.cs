@@ -40,7 +40,7 @@ namespace GotoCarRental.Areas.Customer.Pages.Rentals
                 return NotFound();
 
             // Tính số ngày thuê
-            RentalDays = (Rental.EndDate - Rental.StartDate).Days;
+            RentalDays = (Rental.EndDate - Rental.StartDate).Days + 1;
             if (RentalDays < 1) RentalDays = 1;
 
             // Kiểm tra và cập nhật tổng tiền nếu nó bằng 0
