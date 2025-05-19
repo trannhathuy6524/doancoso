@@ -1,0 +1,191 @@
+﻿@page "{id:int}"
+@model GotoCarRental.Areas.Admin.Pages.Model3DTemplates.EditModel
+@{
+    ViewData["Title"] = "Chỉnh sửa mô hình 3D";
+}
+
+<div class="container py-4">
+    <div class="row">
+        <div class="col-md-8">
+            <h1 class="display-6 fw-bold">Chỉnh sửa mô hình 3D</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-area="Admin" asp-page="/Index">Trang chủ</a></li>
+                    <li class="breadcrumb-item"><a asp-page="./Index">Mô hình 3D</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Chỉnh sửa</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        <input type="hidden" asp-for="Model3DTemplate.Id" />
+                        <input type="hidden" asp-for="Model3DTemplate.FileUrl" />
+                        <input type="hidden" asp-for="Model3DTemplate.PreviewImageUrl" />
+                        <input type="hidden" asp-for="Model3DTemplate.CreatedAt" />
+                        
+                        <div class="mb-3">
+                            <label asp-for="Model3DTemplate.Name" class="form-label">Tên mô hình</label>
+                            <input asp-for="Model3DTemplate.Name" class="form-control" />
+                            <span asp-validation-for="Model3DTemplate.Name" class="text-danger"></span>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="Model3DTemplate.BrandId" class="form-label">Hãng xe</label>
+                                <select asp-for="Model3DTemplate.BrandId" asp-items="Model.BrandSelectList" class="form-select">
+                                    <option value="">-- Chọn hãng xe --</option>
+                                </select>
+                                <span asp-validation-for="Model3DTemplate.BrandId" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="Model3DTemplate.CategoryId" class="form-label">Loại xe</label>
+                                <select asp-for="Model3DTemplate.CategoryId" asp-items="Model.CategorySelectList" class="form-select">
+                                    <option value="">-- Chọn loại xe --</option>
+                                </select>
+                                <span asp-validation-for="Model3DTemplate.CategoryId" class="text-danger"></span>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="Model3DTemplate.Description" class="form-label">Mô tả</label>
+                            <textarea asp-for="Model3DTemplate.Description" class="form-control" rows="3"></textarea>
+                            <span asp-validation-for="Model3DTemplate.Description" class="text-danger"></span>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="Model3DFile" class="form-label">Thay đổi file mô hình 3D (tùy chọn)</label>
+                                <input asp-for="Model3DFile" class="form-control" type="file" accept=".glb,.gltf" />
+                                <div class="form-text">Để trống nếu không muốn thay đổi file mô hình.</div>
+                                <span asp-validation-for="Model3DFile" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="PreviewImage" class="form-label">Thay đổi hình ảnh xem trước (tùy chọn)</label>
+                                <input asp-for="PreviewImage" class="form-control" type="file" accept="image/*" />
+                                <div class="form-text">Để trống nếu không muốn thay đổi hình ảnh.</div>
+                                <span asp-validation-for="PreviewImage" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <p class="mb-2 fw-semibold">Hình ảnh xem trước hiện tại:</p>
+                                <img src="@Model.Model3DTemplate.PreviewImageUrl" class="img-thumbnail" style="max-height: 150px;" alt="Hình ảnh xem trước" />
+                            </div>
+                            <div class="col-md-6">
+                                <p class="mb-2 fw-semibold">File mô hình hiện tại:</p>
+                                <p class="text-muted small">
+                                    <i class="bi bi-file-earmark-binary text-primary"></i>
+                                    @System.IO.Path.GetFileName(Model.Model3DTemplate.FileUrl)
+                                </p>
+                                <a href="@Model.Model3DTemplate.FileUrl" target="_blank" class="btn btn-sm btn-outline-secondary">
+                                    <i class="bi bi-download me-1"></i>Tải xuống
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-end">
+                            <a asp-page="./Index" class="btn btn-outline-secondary me-2">
+                                <i class="bi bi-arrow-left me-1"></i> Quay lại
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save me-1"></i> Lưu thay đổi
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light py-3">
+                    <h5 class="mb-0">Thông tin mô hình</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <p class="mb-1 small fw-semibold text-muted">ID:</p>
+                        <p>@Model.Model3DTemplate.Id</p>
+                    </div>
+                    <div class="mb-3">
+                        <p class="mb-1 small fw-semibold text-muted">Ngày tạo:</p>
+                        <p>@Model.Model3DTemplate.CreatedAt.ToString("dd/MM/yyyy HH:mm")</p>
+                    </div>
+                    <div class="mb-0">
+                        <p class="mb-1 small fw-semibold text-muted">Cập nhật lần cuối:</p>
+                        <p>@Model.Model3DTemplate.UpdatedAt.ToString("dd/MM/yyyy HH:mm")</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card shadow-sm">
+                <div class="card-header bg-light py-3">
+                    <h5 class="mb-0">Xem trước</h5>
+                </div>
+                <div class="card-body text-center">
+                    <p class="text-muted mb-3">Xem trước mô hình 3D</p>
+                    <div style="height: 200px; display: flex; align-items: center; justify-content: center; background-color: #f8f9fa;">
+                        <a href="#" onclick="openModelViewer(); return false;" class="btn btn-outline-primary">
+                            <i class="bi bi-box me-1"></i> Xem mô hình 3D
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal xem 3D -->
+<div class="modal fade" id="model3DViewerModal" tabindex="-1" aria-labelledby="model3DViewerModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="model3DViewerModalLabel">Xem mô hình 3D: @Model.Model3DTemplate.Name</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0">
+                <model-viewer id="model3dViewer" 
+                              src="@Model.Model3DTemplate.FileUrl" 
+                              alt="@Model.Model3DTemplate.Name" 
+                              auto-rotate 
+                              camera-controls 
+                              style="width: 100%; height: 500px;">
+                </model-viewer>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    @Html.Raw("<script type=\"module\" src=\"https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js\"></script>")
+    <script>
+        // Xem trước hình ảnh khi chọn file mới
+        document.getElementById('PreviewImage')?.addEventListener('change', function() {
+            var file = this.files[0];
+            if (file) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    // Hiển thị trong phần preview nếu cần
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Mở modal xem mô hình 3D
+        function openModelViewer() {
+            var modal = new bootstrap.Modal(document.getElementById('model3DViewerModal'));
+            modal.show();
+        }
+    </script>
+}
+

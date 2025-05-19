@@ -1,0 +1,130 @@
+﻿@page
+@model GotoCarRental.Areas.Admin.Pages.Cars.UserCarsModel
+@{
+    ViewData["Title"] = $"Xe của {Model.CarOwner?.FullName}";
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1">
+                    <li class="breadcrumb-item"><a asp-area="Admin" asp-page="/Index">Trang chủ Admin</a></li>
+                    <li class="breadcrumb-item"><a asp-area="Admin" asp-page="/Cars/Index">Quản lý xe</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Xe của chủ xe</li>
+                </ol>
+            </nav>
+            <h1 class="display-6 fw-bold">Xe của @Model.CarOwner?.FullName</h1>
+        </div>
+    </div>
+    
+    <!-- Thông tin chủ xe -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">Thông tin chủ xe</h5>
+        </div>
+        <div class="card-body">
+            @if (Model.CarOwner != null)
+            {
+                <div class="d-flex align-items-center">
+                    <div class="bg-light rounded-circle p-3 me-3">
+                        <i class="bi bi-person-circle fs-3"></i>
+                    </div>
+                    <div>
+                        <h5 class="mb-1">@Model.CarOwner.FullName</h5>
+                        <p class="mb-0"><i class="bi bi-envelope me-1"></i> @Model.CarOwner.Email</p>
+                        @if (!string.IsNullOrEmpty(Model.CarOwner.PhoneNumber))
+                        {
+                            <p class="mb-0"><i class="bi bi-telephone me-1"></i> @Model.CarOwner.PhoneNumber</p>
+                        }
+                    </div>
+                </div>
+            }
+            else
+            {
+                <p class="text-muted mb-0">Không tìm thấy thông tin chủ xe.</p>
+            }
+        </div>
+    </div>
+    
+    <!-- Danh sách xe -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">Danh sách xe (@Model.Cars.Count())</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Hình ảnh</th>
+                            <th>Tên xe</th>
+                            <th>Hãng xe</th>
+                            <th>Loại xe</th>
+                            <th>Giá thuê/ngày</th>
+                            <th>Trạng thái</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var car in Model.Cars)
+                        {
+                            <tr>
+                                <td>@car.Id</td>
+                                <td>
+                                    @if (car.CarImages != null && car.CarImages.Any())
+                                    {
+                                        var mainImage = car.CarImages.FirstOrDefault(ci => ci.IsMainImage) ?? car.CarImages.First();
+                                        <img src="/@(mainImage.ImageUrl.TrimStart('/'))" 
+                                             alt="@car.Name" 
+                                             class="img-thumbnail" 
+                                             style="width: 60px; height: 45px; object-fit: cover;">
+                                    }
+                                    else
+                                    {
+                                        <div class="bg-light text-center" style="width: 60px; height: 45px;">
+                                            <i class="bi bi-image text-muted" style="line-height: 45px;"></i>
+                                        </div>
+                                    }
+                                </td>
+                                <td>@car.Name</td>
+                                <td>@car.Brand?.Name</td>
+                                <td>@car.Category?.Name</td>
+                                <td>@car.PricePerDay.ToString("N0") VNĐ</td>
+                                <td>
+                                    @if (car.IsApproved && car.IsAvailable)
+                                    {
+                                        <span class="badge bg-success">Có sẵn</span>
+                                    }
+                                    else if (!car.IsApproved)
+                                    {
+                                        <span class="badge bg-warning text-dark">Chờ duyệt</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Không sẵn</span>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a asp-page="./Details" asp-route-id="@car.Id" class="btn btn-sm btn-outline-primary" title="Chi tiết">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a asp-page="./Edit" asp-route-id="@car.Id" class="btn btn-sm btn-outline-secondary" title="Chỉnh sửa">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+}

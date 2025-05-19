@@ -1,0 +1,150 @@
+﻿@page
+@model GotoCarRental.Areas.Admin.Pages.Model3DTemplates.IndexModel
+@{
+    ViewData["Title"] = "Quản lý mô hình 3D";
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="display-6 fw-bold">Quản lý mô hình 3D</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a asp-area="Admin" asp-page="/Index">Trang chủ</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Mô hình 3D</li>
+                </ol>
+            </nav>
+        </div>
+        <div>
+            <a asp-page="./Create" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-1"></i> Thêm mô hình 3D mới
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-light py-3">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h5 class="mb-0">Danh sách mô hình 3D</h5>
+                </div>
+                <div class="col-md-4">
+                    <form method="get" class="d-flex">
+                        <select name="brandId" asp-items="Model.BrandSelectList" class="form-select me-2">
+                            <option value="">-- Tất cả hãng xe --</option>
+                        </select>
+                        <button type="submit" class="btn btn-outline-primary">Lọc</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            @if (!Model.Model3DTemplates.Any())
+            {
+                <div class="text-center py-4">
+                    <i class="bi bi-cube display-1 text-muted"></i>
+                    <h4 class="mt-3">Chưa có mô hình 3D nào</h4>
+                    <p class="text-muted">Hãy thêm mô hình 3D đầu tiên để chủ xe có thể chọn khi thêm xe.</p>
+                    <a asp-page="./Create" class="btn btn-primary mt-2">
+                        <i class="bi bi-plus-circle me-1"></i> Thêm mô hình 3D mới
+                    </a>
+                </div>
+            }
+            else
+            {
+                <div class="row row-cols-1 row-cols-md-3 g-4">
+                    @foreach (var model3D in Model.Model3DTemplates)
+                    {
+                        <div class="col">
+                            <div class="card h-100 model3d-card">
+                                <img src="@model3D.PreviewImageUrl" class="card-img-top" alt="@model3D.Name" style="height: 180px; object-fit: contain;">
+                                <div class="card-body">
+                                    <h5 class="card-title">@model3D.Name</h5>
+                                    <p class="card-text small text-muted mb-1">Hãng xe: @model3D.Brand.Name</p>
+                                    <p class="card-text small text-muted">Loại xe: @model3D.Category.Name</p>
+                                    <p class="card-text">@(model3D.Description.Length > 100 ? model3D.Description.Substring(0, 100) + "..." : model3D.Description)</p>
+                                </div>
+                                <div class="card-footer bg-transparent">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <a asp-page="./Edit" asp-route-id="@model3D.Id" class="btn btn-sm btn-outline-primary me-1" title="Chỉnh sửa">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <a asp-page="./Details" asp-route-id="@model3D.Id" class="btn btn-sm btn-outline-info me-1" title="Chi tiết">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                onclick="confirmDelete(@model3D.Id, '@model3D.Name')" title="Xóa">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                        <span class="text-muted small">
+                                            @model3D.CreatedAt.ToString("dd/MM/yyyy")
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Modal Xác nhận xóa -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Xác nhận xóa</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Bạn có chắc chắn muốn xóa mô hình 3D <strong id="model3DName"></strong>?</p>
+                <p class="text-danger">Lưu ý: Hành động này có thể ảnh hưởng đến các xe đang sử dụng mô hình 3D này.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <form id="deleteForm" method="post" asp-page-handler="Delete">
+                    <input type="hidden" id="model3DIdToDelete" name="id" />
+                    <button type="submit" class="btn btn-danger">Xóa</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <script>
+        // Tự động ẩn thông báo sau 5 giây
+        setTimeout(function () {
+            $('.alert').alert('close');
+        }, 5000);
+        
+        // Hàm xác nhận xóa
+        function confirmDelete(id, name) {
+            document.getElementById('model3DName').textContent = name;
+            document.getElementById('model3DIdToDelete').value = id;
+            var deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            deleteModal.show();
+        }
+    </script>
+}

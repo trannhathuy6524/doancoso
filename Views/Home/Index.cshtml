@@ -1,0 +1,135 @@
+﻿@{
+    ViewData["Title"] = "Trang chủ";
+}
+
+<div class="container py-5">
+    <!-- Hero Section -->
+    <div class="text-center mb-5 hero-section">
+        <h1 class="display-3 fw-bold text-gradient">Khám phá GotoCarRental</h1>
+        <p class="lead text-muted mb-4">Trải nghiệm dịch vụ thuê xe hiện đại, nhanh chóng và đáng tin cậy.</p>
+        <a href="/Customer/Cars/Index" class="btn btn-primary btn-lg rounded-pill shadow">
+            <i class="bi bi-search me-2"></i>Bắt đầu tìm xe
+        </a>
+    </div>
+
+    <!-- Introduction Section -->
+    <div class="mb-5">
+        <h2 class="mb-4 fw-bold text-center">Về GotoCarRental</h2>
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="card shadow-sm border-0 hover-card">
+                    <div class="card-body">
+                        <h5 class="card-title fw-bold">Sứ mệnh của chúng tôi</h5>
+                        <p class="card-text text-muted">Cung cấp dịch vụ thuê xe chất lượng cao, giúp khách hàng di chuyển dễ dàng và thoải mái, đồng thời hỗ trợ chủ xe tối ưu hóa lợi nhuận từ tài sản của họ.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card shadow-sm border-0 hover-card">
+                    <div class="card-body">
+                        <h5 class="card-title fw-bold">Tầm nhìn</h5>
+                        <p class="card-text text-muted">Trở thành nền tảng thuê xe hàng đầu tại Việt Nam, mang đến trải nghiệm liền mạch và đáng tin cậy cho cả khách hàng và chủ xe.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Additional Information Section -->
+    <div class="mb-5">
+        <h2 class="mb-4 fw-bold text-center">Tại sao chọn GotoCarRental?</h2>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card shadow-sm border-0 hover-card text-center">
+                    <div class="card-body">
+                        <i class="bi bi-shield-check display-4 text-primary mb-3"></i>
+                        <h5 class="card-title fw-bold">An toàn và bảo mật</h5>
+                        <p class="card-text text-muted">Mọi giao dịch đều được mã hóa và bảo vệ, đảm bảo thông tin cá nhân của bạn luôn an toàn.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card shadow-sm border-0 hover-card text-center">
+                    <div class="card-body">
+                        <i class="bi bi-clock-history display-4 text-primary mb-3"></i>
+                        <h5 class="card-title fw-bold">Hỗ trợ 24/7</h5>
+                        <p class="card-text text-muted">Đội ngũ hỗ trợ của chúng tôi luôn sẵn sàng giải đáp mọi thắc mắc bất kể thời gian.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card shadow-sm border-0 hover-card text-center">
+                    <div class="card-body">
+                        <i class="bi bi-star-fill display-4 text-primary mb-3"></i>
+                        <h5 class="card-title fw-bold">Đánh giá cao</h5>
+                        <p class="card-text text-muted">Hàng ngàn khách hàng đã tin tưởng và đánh giá 5 sao cho dịch vụ của chúng tôi.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    
+
+
+    <!-- Call to Action Section -->
+    <div class="text-center mb-5">
+        <h3 class="fw-bold mb-3">Sẵn sàng trải nghiệm?</h3>
+        <p class="text-muted mb-4">Tham gia ngay để khám phá hàng trăm lựa chọn xe phù hợp với nhu cầu của bạn!</p>
+        <a href="/Customer/Cars/Index" class="btn btn-primary btn-lg rounded-pill shadow">
+            <i class="bi bi-rocket-takeoff me-2"></i>Tham gia ngay
+        </a>
+    </div>
+</div>
+
+<style>
+    .hero-section {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        padding: 3rem;
+        border-radius: 1rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .text-gradient {
+        background: linear-gradient(45deg, #007bff, #00d4ff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .hover-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+        .hover-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+        }
+
+    .btn-primary {
+        background: linear-gradient(45deg, #007bff, #00d4ff);
+        border: none;
+        transition: transform 0.2s ease;
+    }
+
+        .btn-primary:hover {
+            transform: scale(1.05);
+        }
+
+    .rounded-pill {
+        border-radius: 50rem !important;
+    }
+
+    @@media (max-width: 768px) {
+        .hero-section
+
+    {
+        padding: 2rem;
+    }
+
+    .display-3 {
+        font-size: 2.5rem;
+    }
+
+    }
+</style>

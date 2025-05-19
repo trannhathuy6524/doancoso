@@ -1,0 +1,214 @@
+﻿@model GotoCarRental.Models.Car
+@using System.Security.Claims
+
+@{
+    ViewData["Title"] = "Thêm xe mới";
+}
+
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="display-6 fw-bold">Thêm xe mới</h1>
+            <p class="text-muted">Vui lòng điền đầy đủ thông tin xe của bạn để đăng ký cho thuê.</p>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <form asp-action="Create" method="post" enctype="multipart/form-data">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <!-- Sau dòng <div asp-validation-summary="ModelOnly" class="text-danger"></div> -->
+                @if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
+                {
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i> @ViewBag.ErrorMessage
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+
+                <!-- Hiển thị ModelState errors nếu có -->
+                @if (!ViewData.ModelState.IsValid)
+                {
+                    <div class="alert alert-danger mb-4">
+                        <h5><i class="bi bi-exclamation-triangle-fill me-2"></i>Có lỗi xảy ra:</h5>
+                        <ul class="mb-0">
+                            @foreach (var modelState in ViewData.ModelState.Values)
+                            {
+                                foreach (var error in modelState.Errors)
+                                {
+                                    <li>@error.ErrorMessage</li>
+                                }
+                            }
+                        </ul>
+                    </div>
+                }
+
+                <!-- Hiển thị thông báo từ TempData nếu có -->
+                @if (TempData["ErrorMessage"] != null)
+                {
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["ErrorMessage"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+
+
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h4 class="mb-3">Thông tin cơ bản</h4>
+                        
+                        <div class="mb-3">
+                            <label asp-for="Name" class="form-label">Tên xe</label>
+                            <input asp-for="Name" class="form-control" placeholder="Nhập tên xe" required />
+                            <span asp-validation-for="Name" class="text-danger"></span>
+                        </div>
+
+                        <!-- Kiểm tra file Create.cshtml và đảm bảo các trường bắt buộc được thiết lập đúng -->
+                        <!-- Đặc biệt BrandId và CategoryId phải được bind chính xác -->
+
+                        <div class="mb-3">
+                            <label asp-for="BrandId" class="form-label">Hãng xe</label>
+                            <select asp-for="BrandId" class="form-select" required>
+                                <option value="">-- Chọn hãng xe --</option>
+                                @foreach (var brand in ViewBag.Brands ?? new List<Brand>())
+                                {
+                                    <option value="@brand.Id">@brand.Name</option>
+                                }
+                            </select>
+                            <span asp-validation-for="BrandId" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="CategoryId" class="form-label">Loại xe</label>
+                            <select asp-for="CategoryId" class="form-select" required>
+                                <option value="">-- Chọn loại xe --</option>
+                                @foreach (var category in ViewBag.Categories ?? new List<Category>())
+                                {
+                                    <option value="@category.Id">@category.Name</option>
+                                }
+                            </select>
+                            <span asp-validation-for="CategoryId" class="text-danger"></span>
+                        </div>
+
+
+                        
+
+                        <div class="mb-3">
+                            <label asp-for="PricePerDay" class="form-label">Giá thuê mỗi ngày (VNĐ)</label>
+                            <input asp-for="PricePerDay" type="number" class="form-control" min="0" step="10000" placeholder="Nhập giá thuê" required />
+                            <span asp-validation-for="PricePerDay" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3 form-check">
+                            <input asp-for="IsAvailable" class="form-check-input" checked />
+                            <label asp-for="IsAvailable" class="form-check-label">Sẵn sàng cho thuê</label>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <h4 class="mb-3">Mô tả & Hình ảnh</h4>
+                        
+                        <div class="mb-3">
+                            <label asp-for="Description" class="form-label">Mô tả chi tiết</label>
+                            <textarea asp-for="Description" class="form-control" rows="5" placeholder="Mô tả chi tiết về xe, tính năng đặc biệt, lịch sử xe, v.v..." required></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="carImages" class="form-label">Hình ảnh xe <span class="text-muted">(tối đa 5 ảnh)</span></label>
+                            <input type="file" name="carImages" id="carImages" class="form-control" accept="image/*" multiple />
+                            <div class="form-text">
+                                Định dạng hỗ trợ: JPG, PNG, JPEG. Kích thước tối đa: 5MB/ảnh.
+                            </div>
+                        </div>
+
+                        <div id="imagePreviewContainer" class="row mt-3 g-2">
+                            <!-- Hiển thị xem trước ảnh sẽ được thêm bằng JavaScript -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="alert alert-info">
+                    <div class="d-flex">
+                        <div class="me-3">
+                            <i class="bi bi-info-circle-fill fs-4"></i>
+                        </div>
+                        <div>
+                            <h5 class="alert-heading">Lưu ý</h5>
+                            <p class="mb-0">Xe của bạn sẽ cần được quản trị viên duyệt trước khi hiển thị công khai trên hệ thống. Vui lòng cung cấp thông tin chính xác để quá trình duyệt diễn ra nhanh chóng.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <a asp-action="Index" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Quay lại
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-cloud-upload"></i> Đăng ký xe
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <!-- Thêm Bootstrap Icons CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    
+    <!-- Thêm validation scripts -->
+    <partial name="_ValidationScriptsPartial" />
+    
+    <script>
+        // Hiển thị xem trước hình ảnh khi người dùng chọn file
+        document.getElementById('carImages').addEventListener('change', function() {
+            const previewContainer = document.getElementById('imagePreviewContainer');
+            previewContainer.innerHTML = ''; // Xóa tất cả nội dung cũ
+            
+            const files = this.files;
+            const maxFiles = 5;
+            const maxFilesToShow = Math.min(files.length, maxFiles);
+            
+            if (files.length > maxFiles) {
+                alert(`Chỉ có thể tải lên tối đa ${maxFiles} ảnh. Chỉ ${maxFiles} ảnh đầu tiên sẽ được xem trước.`);
+            }
+            
+            for (let i = 0; i < maxFilesToShow; i++) {
+                const file = files[i];
+                
+                // Kiểm tra định dạng ảnh
+                if (!file.type.match('image.*')) {
+                    continue;
+                }
+                
+                const col = document.createElement('div');
+                col.className = 'col-4';
+                
+                const card = document.createElement('div');
+                card.className = 'card h-100';
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.className = 'card-img-top';
+                    img.style.height = '150px';
+                    img.style.objectFit = 'cover';
+                    
+                    card.appendChild(img);
+                    
+                    const cardBody = document.createElement('div');
+                    cardBody.className = 'card-body p-2';
+                    cardBody.innerHTML = `<p class="card-text small text-truncate">${file.name}</p>`;
+                    
+                    card.appendChild(cardBody);
+                    col.appendChild(card);
+                    previewContainer.appendChild(col);
+                }
+                
+                reader.readAsDataURL(file);
+            }
+        });
+    </script>
+}

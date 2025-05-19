@@ -1,0 +1,75 @@
+﻿@page "{id:int}"
+@model GotoCarRental.Areas.Admin.Pages.Brands.EditModel
+@{
+    ViewData["Title"] = "Sửa thông tin hãng xe";
+}
+
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1">
+                    <li class="breadcrumb-item"><a asp-area="Admin" asp-page="/Index">Trang chủ</a></li>
+                    <li class="breadcrumb-item"><a asp-area="Admin" asp-page="/Brands/Index">Quản lý hãng xe</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Sửa hãng xe</li>
+                </ol>
+            </nav>
+            <h1 class="display-6 fw-bold">Sửa thông tin hãng xe</h1>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <form method="post">
+                        <input type="hidden" asp-for="Brand.Id" />
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        
+                        <div class="mb-4">
+                            <label asp-for="Brand.Name" class="form-label">Tên hãng xe</label>
+                            <input asp-for="Brand.Name" class="form-control" placeholder="Nhập tên hãng xe" />
+                            <span asp-validation-for="Brand.Name" class="text-danger"></span>
+                            <div class="form-text">Tên hãng xe nên ngắn gọn và dễ nhớ.</div>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <a asp-page="./Index" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left me-1"></i> Quay lại
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle me-1"></i> Cập nhật
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Thông tin</h5>
+                </div>
+                <div class="card-body">
+                    <p>Chỉnh sửa thông tin của hãng xe <strong>@Model.Brand.Name</strong>.</p>
+                    <p>Hãng xe này hiện có <strong>@Model.CarCount</strong> xe trong hệ thống.</p>
+                    <hr />
+                    <div class="d-flex justify-content-between">
+                        <a asp-page="./Details" asp-route-id="@Model.Brand.Id" class="btn btn-outline-primary">
+                            <i class="bi bi-info-circle me-1"></i> Chi tiết
+                        </a>
+                        <a asp-page="./Cars" asp-route-id="@Model.Brand.Id" class="btn btn-outline-info">
+                            <i class="bi bi-car-front me-1"></i> Xem các xe
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <partial name="_ValidationScriptsPartial" />
+}

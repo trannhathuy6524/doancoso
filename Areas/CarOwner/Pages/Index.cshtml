@@ -1,0 +1,209 @@
+﻿@page
+@model GotoCarRental.Areas.CarOwner.Pages.IndexModel
+@{
+    ViewData["Title"] = "Quản lý xe cho thuê";
+}
+
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="display-6 fw-bold">Bảng điều khiển chủ xe</h1>
+            <p class="text-muted">Tổng quan về xe và đơn thuê của bạn</p>
+        </div>
+    </div>
+
+    <!-- Thẻ tổng quan -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <a asp-area="CarOwner" asp-page="/MyCars" class="card text-decoration-none text-dark shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-primary bg-opacity-10 p-3 rounded me-3">
+                            <i class="bi bi-car-front fs-2 text-primary"></i>
+                        </div>
+                        <div>
+                            <h5 class="card-title mb-1">Xe của tôi</h5>
+                            <p class="card-text text-muted mb-0">Quản lý danh sách xe của bạn</p>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <!-- Các card khác -->
+    </div>
+
+    <!-- Thống kê xe và đơn thuê -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-subtitle mb-2 text-muted">Tổng số xe</h6>
+                            <h2 class="card-title mb-0">@Model.TotalCars</h2>
+                        </div>
+                        <div class="bg-primary bg-opacity-10 p-3 rounded">
+                            <i class="bi bi-car-front fs-2 text-primary"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent">
+                    <a asp-area="CarOwner" asp-page="/Cars/Index" class="text-primary text-decoration-none">
+                        Xem chi tiết <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-subtitle mb-2 text-muted">Xe đang hoạt động</h6>
+                            <h2 class="card-title mb-0">@Model.AvailableCars</h2>
+                        </div>
+                        <div class="bg-success bg-opacity-10 p-3 rounded">
+                            <i class="bi bi-check-circle fs-2 text-success"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent">
+                    <a asp-area="CarOwner" asp-page="/Cars/Index" class="text-success text-decoration-none">
+                        Xem chi tiết <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-subtitle mb-2 text-muted">Tổng đơn thuê</h6>
+                            <h2 class="card-title mb-0">@Model.TotalRentals</h2>
+                        </div>
+                        <div class="bg-info bg-opacity-10 p-3 rounded">
+                            <i class="bi bi-clipboard-check fs-2 text-info"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent">
+                    <a asp-area="CarOwner" asp-page="/Rentals/Index" class="text-info text-decoration-none">
+                        Xem chi tiết <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-subtitle mb-2 text-muted">Đơn chờ duyệt</h6>
+                            <h2 class="card-title mb-0">@Model.PendingRentals</h2>
+                        </div>
+                        <div class="bg-warning bg-opacity-10 p-3 rounded">
+                            <i class="bi bi-hourglass-split fs-2 text-warning"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent">
+                    <a asp-area="CarOwner" asp-page="/Rentals/Index" class="text-warning text-decoration-none">
+                        Xem chi tiết <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Thống kê đơn thuê xe -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Thống kê đơn thuê xe</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3 mb-md-0">
+                            <div class="border rounded p-3 text-center h-100">
+                                <div class="display-5 text-warning mb-2">@Model.PendingRentals</div>
+                                <div>Chờ xác nhận</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3 mb-md-0">
+                            <div class="border rounded p-3 text-center h-100">
+                                <div class="display-5 text-primary mb-2">@Model.ConfirmedRentals</div>
+                                <div>Đã xác nhận</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3 mb-md-0">
+                            <div class="border rounded p-3 text-center h-100">
+                                <div class="display-5 text-success mb-2">@Model.CompletedRentals</div>
+                                <div>Hoàn thành</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="border rounded p-3 text-center h-100">
+                                <div class="display-5 text-success mb-2">@Model.TotalEarnings.ToString("N0") VNĐ</div>
+                                <div>Tổng doanh thu</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-center mt-3">
+                        <a asp-area="CarOwner" asp-page="/Rentals/Index" class="btn btn-primary">
+                            <i class="bi bi-list-ul me-2"></i>Quản lý đơn thuê
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Các thẻ quản lý nhanh -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light py-3">
+                    <h5 class="mb-0">Quản lý xe của bạn</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <a asp-area="CarOwner" asp-page="/Cars/Index" class="btn btn-outline-primary w-100 py-3">
+                                <i class="bi bi-car-front fs-4 d-block mb-2"></i>
+                                Danh sách xe
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a asp-area="CarOwner" asp-page="/Cars/Create" class="btn btn-outline-success w-100 py-3">
+                                <i class="bi bi-plus-circle fs-4 d-block mb-2"></i>
+                                Thêm xe mới
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a asp-area="CarOwner" asp-page="/Rentals/Index" class="btn btn-outline-info w-100 py-3">
+                                <i class="bi bi-clipboard-check fs-4 d-block mb-2"></i>
+                                Quản lý đơn thuê
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a asp-area="CarOwner" asp-page="/Profile/Index" class="btn btn-outline-warning w-100 py-3">
+                                <i class="bi bi-person-circle fs-4 d-block mb-2"></i>
+                                Thông tin cá nhân
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <!-- Thêm Bootstrap Icons CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+}

@@ -1,0 +1,492 @@
+﻿@page
+@model GotoCarRental.Areas.Customer.Pages.Cars.DetailsModel
+@{
+    ViewData["Title"] = Model.Car.Name;
+}
+
+<div class="container py-4">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-area="Customer" asp-page="/Index">Trang chủ</a></li>
+            <li class="breadcrumb-item"><a asp-area="Customer" asp-page="/Cars/Index">Xe</a></li>
+            <li class="breadcrumb-item active" aria-current="page">@Model.Car.Name</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- 3D Model Viewer - Thay thế cho carousel ảnh -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-body p-0">
+                    @if (Model.Car.CarModel3D != null)
+                    {
+                        <div id="model3d-container" style="height: 400px; width: 100%;">
+                            <div class="spinner-border text-primary position-absolute top-50 start-50 translate-middle" role="status">
+                                <span class="visually-hidden">Đang tải...</span>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <!-- Nếu không có mô hình 3D, hiển thị ảnh chính -->
+                        <div id="carImages" class="carousel slide" data-bs-ride="carousel">
+                            <div class="carousel-indicators">
+                                @if (Model.Car.CarImages != null)
+                                {
+                                    @for (int i = 0; i < Model.Car.CarImages.Count(); i++)
+                                    {
+                                        <button type="button" data-bs-target="#carImages" data-bs-slide-to="@i" class="@(i == 0 ? "active" : "")"
+                                                aria-label="Slide @(i+1)" aria-current="@(i == 0 ? "true" : "false")"></button>
+                                    }
+                                }
+                            </div>
+                            <div class="carousel-inner">
+                                @if (Model.Car.CarImages != null && Model.Car.CarImages.Any())
+                                {
+                                    int index = 0;
+                                    foreach (var image in Model.Car.CarImages)
+                                    {
+                                        <div class="carousel-item @(index == 0 ? "active" : "")">
+                                            <img src="/@(image.ImageUrl.TrimStart('/'))" class="d-block w-100" alt="@Model.Car.Name"
+                                                 style="height: 400px; object-fit: cover;">
+                                        </div>
+                                        index++;
+                                    }
+                                }
+                                else
+                                {
+                                    <div class="carousel-item active">
+                                        <img src="/images/car-placeholder.png" class="d-block w-100" alt="@Model.Car.Name"
+                                             style="height: 400px; object-fit: contain;">
+                                    </div>
+                                }
+                            </div>
+                            <button class="carousel-control-prev" type="button" data-bs-target="#carImages" data-bs-slide="prev">
+                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Previous</span>
+                            </button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#carImages" data-bs-slide="next">
+                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Next</span>
+                            </button>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Car Details -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h1 class="card-title mb-3">@Model.Car.Name</h1>
+
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="me-3">
+                            <span class="badge bg-primary">@Model.Car.Brand?.Name</span>
+                            <span class="badge bg-secondary">@Model.Car.Category?.Name</span>
+                        </div>
+                        <div class="ms-auto">
+                            <div class="d-flex align-items-center">
+                                @for (int i = 1; i <= 5; i++)
+                                {
+                                    if (i <= Math.Round(Model.AverageRating))
+                                    {
+                                        <i class="bi bi-star-fill text-warning me-1"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="bi bi-star text-warning me-1"></i>
+                                    }
+                                }
+                                <span class="ms-1">(@Model.Reviews.Count() đánh giá)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h5 class="mb-3">Mô tả</h5>
+                    <p class="card-text">@Html.Raw(Model.Car.Description.Replace("\n", "<br />"))</p>
+                </div>
+            </div>
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-geo-alt me-2"></i>Địa chỉ</h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-0">
+                        @if (Model.Car.Province != null)
+                        {
+                            <span class="fw-bold">@Model.Car.Province.Name</span>
+                            @if (!string.IsNullOrEmpty(Model.Car.DetailedAddress))
+                            {
+                                <span> - @Model.Car.DetailedAddress</span>
+                            }
+                        }
+                        else
+                        {
+                            <span class="text-muted">Không có thông tin địa chỉ</span>
+                        }
+                    </p>
+                </div>
+            </div>
+
+            <!-- Car Images - Đã di chuyển xuống bên dưới sau model 3D -->
+            @if (Model.Car.CarModel3D != null && Model.Car.CarImages != null && Model.Car.CarImages.Any())
+            {
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0"><i class="bi bi-images me-2"></i>Hình ảnh xe</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-2">
+                            @foreach (var image in Model.Car.CarImages)
+                            {
+                                <div class="col-4">
+                                    <img src="/@(image.ImageUrl.TrimStart('/'))" class="img-fluid rounded" alt="@Model.Car.Name"
+                                         style="height: 150px; width: 100%; object-fit: cover; cursor: pointer;"
+                                         data-bs-toggle="modal" data-bs-target="#imageModal"
+                                         data-bs-src="/@(image.ImageUrl.TrimStart('/'))">
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal xem ảnh lớn -->
+                <div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-lg modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Hình ảnh @Model.Car.Name</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <img src="" id="modalImage" class="img-fluid" alt="@Model.Car.Name">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <!-- Features -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-gear-fill me-2"></i>Tính năng xe</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        @if (Model.Features != null && Model.Features.Any())
+                        {
+                            @foreach (var feature in Model.Features)
+                            {
+                                <div class="col-md-4 mb-2">
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                        <span>@feature.Name</span>
+                                    </div>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="col">
+                                <p class="text-muted mb-0">Không có thông tin về tính năng xe</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Phần đánh giá -->
+            <div class="card shadow-sm rounded-4 mt-4">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h3 class="h5 fw-bold mb-0">
+                        <i class="bi bi-star-half me-2 text-warning"></i> Đánh giá từ khách hàng
+                    </h3>
+                    @if (User.Identity.IsAuthenticated && !Model.HasUserReviewed)
+                    {
+                        <a asp-area="Customer" asp-page="/Reviews/Create" asp-route-carId="@Model.Car.Id" class="btn btn-primary">
+                            <i class="bi bi-pencil me-2"></i> Viết đánh giá
+                        </a>
+                    }
+                </div>
+                <div class="card-body">
+                    @if (!Model.Reviews.Any())
+                    {
+                        <div class="text-center py-4">
+                            <i class="bi bi-chat-square-text display-4 text-muted"></i>
+                            <p class="lead mt-3 mb-1">Chưa có đánh giá nào</p>
+                            <p class="text-muted">Hãy là người đầu tiên đánh giá xe này!</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="mb-4">
+                            <div class="d-flex align-items-center gap-3">
+                                <div>
+                                    <span class="display-4 fw-bold">@Model.AverageRating.ToString("0.0")</span>
+                                    <div class="text-warning">
+                                        @for (int i = 1; i <= 5; i++)
+                                        {
+                                            if (i <= Math.Floor(Model.AverageRating))
+                                            {
+                                                <i class="bi bi-star-fill"></i>
+                                            }
+                                            else if (i - 0.5 <= Model.AverageRating)
+                                            {
+                                                <i class="bi bi-star-half"></i>
+                                            }
+                                            else
+                                            {
+                                                <i class="bi bi-star"></i>
+                                            }
+                                        }
+                                    </div>
+                                    <div class="text-muted">@Model.Reviews.Count() đánh giá</div>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    @for (int i = 5; i >= 1; i--)
+                                    {
+                                        var count = Model.Reviews.Count(r => r.Rating == i);
+                                        var percentage = Model.Reviews.Any() ? (count * 100 / Model.Reviews.Count()) : 0;
+                                        <div class="d-flex align-items-center mb-1">
+                                            <div class="text-warning me-2">@i <i class="bi bi-star-fill"></i></div>
+                                            <div class="progress flex-grow-1" style="height: 8px;">
+                                                <div class="progress-bar bg-warning" role="progressbar" style="width: @percentage%"></div>
+                                            </div>
+                                            <small class="text-muted ms-2">@percentage%</small>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr />
+
+                        <div class="mt-4">
+                            @foreach (var review in Model.Reviews)
+                            {
+                                <div class="mb-4">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-2"
+                                                 style="width: 40px; height: 40px;">
+                                                @(review.User.FullName != null ? review.User.FullName.Substring(0, 1).ToUpper() : "U")
+                                            </div>
+                                            <div>
+                                                <div class="fw-bold">@(review.User.FullName ?? review.User.UserName)</div>
+                                                <div class="text-muted small">@review.CreatedAt.ToString("dd/MM/yyyy")</div>
+                                            </div>
+                                        </div>
+                                        <div class="text-warning">
+                                            @for (int i = 1; i <= 5; i++)
+                                            {
+                                                @if (i <= review.Rating)
+                                                {
+                                                    <i class="bi bi-star-fill"></i>
+                                                }
+                                                else
+                                                {
+                                                    <i class="bi bi-star"></i>
+                                                }
+                                            }
+                                        </div>
+                                    </div>
+                                    <p class="mb-0">@review.Comment</p>
+                                </div>
+
+                                @if (review != Model.Reviews.Last())
+                                {
+                                    <hr />
+                                }
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+
+
+            <!-- Related Cars -->
+            @if (Model.RelatedCars != null && Model.RelatedCars.Any())
+            {
+                <div class="card shadow-sm">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">Xe tương tự</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row row-cols-1 row-cols-md-2 g-3">
+                            @foreach (var relatedCar in Model.RelatedCars)
+                            {
+                                <div class="col">
+                                    <div class="card h-100 shadow-sm">
+                                        <div class="row g-0">
+                                            <div class="col-4">
+                                                @if (relatedCar.CarImages != null && relatedCar.CarImages.Any())
+                                                {
+                                                    var mainImage = relatedCar.CarImages.FirstOrDefault(ci => ci.IsMainImage) ?? relatedCar.CarImages.First();
+                                                    <img src="/@(mainImage.ImageUrl.TrimStart('/'))" class="img-fluid rounded-start" alt="@relatedCar.Name" style="height: 100%; object-fit: cover;">
+                                                }
+                                                else
+                                                {
+                                                    <img src="/images/car-placeholder.png" class="img-fluid rounded-start" alt="@relatedCar.Name" style="height: 100%; object-fit: cover;">
+                                                }
+                                            </div>
+                                            <div class="col-8">
+                                                <div class="card-body p-2">
+                                                    <h6 class="card-title mb-1">@relatedCar.Name</h6>
+                                                    <p class="small text-muted mb-2">@relatedCar.PricePerDay.ToString("N0") VNĐ/ngày</p>
+                                                    <a asp-area="Customer" asp-page="/Cars/Details" asp-route-id="@relatedCar.Id" class="btn btn-sm btn-outline-primary">
+                                                        Xem chi tiết
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="col-lg-4">
+            <!-- Car Price & Booking -->
+            <div class="card shadow-sm mb-4 sticky-top" style="top: 20px; z-index: 1020;">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">@Model.Car.PricePerDay.ToString("N0") VNĐ/ngày</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" asp-page-handler="Calculate" asp-route-id="@Model.Car.Id">
+                        <div class="mb-3">
+                            <label asp-for="StartDate" class="form-label">Ngày bắt đầu</label>
+                            <input asp-for="StartDate" type="date" class="form-control" min="@DateTime.Today.ToString("yyyy-MM-dd")" required />
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="EndDate" class="form-label">Ngày kết thúc</label>
+                            <input asp-for="EndDate" type="date" class="form-control" min="@DateTime.Today.AddDays(1).ToString("yyyy-MM-dd")" required />
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-outline-primary mb-3">
+                                <i class="bi bi-calculator me-2"></i>Tính giá
+                            </button>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Giá thuê/ngày:</span>
+                                <span>@Model.Car.PricePerDay.ToString("N0") VNĐ</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Số ngày thuê:</span>
+                                <span>@Model.Days ngày</span>
+                            </div>
+                            <hr>
+                            <div class="d-flex justify-content-between fw-bold">
+                                <span>Tổng cộng:</span>
+                                <span>@Model.TotalPrice.ToString("N0") VNĐ</span>
+                            </div>
+                        </div>
+
+                        <div class="d-grid">
+                            <a asp-area="Customer" asp-page="/Rentals/Create" asp-route-id="@Model.Car.Id"
+                               asp-route-startDate="@Model.StartDate?.ToString("yyyy-MM-dd")"
+                               asp-route-endDate="@Model.EndDate?.ToString("yyyy-MM-dd")"
+                               class="btn btn-primary">
+                                <i class="bi bi-cart-plus me-2"></i>Đặt xe
+                            </a>
+                        </div>
+
+                        @if (!Model.IsLoggedIn)
+                        {
+                            <div class="alert alert-info mt-3 mb-0">
+                                <i class="bi bi-info-circle me-2"></i>
+                                <a href="/Identity/Account/Login" class="alert-link">Đăng nhập</a> để đặt xe.
+                            </div>
+                        }
+                    </form>
+                </div>
+            </div>
+
+            <!-- Owner Info -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Thông tin chủ xe</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="flex-shrink-0">
+                            <div class="bg-primary bg-opacity-10 p-2 rounded-circle">
+                                <i class="bi bi-person-circle fs-3 text-primary"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="mb-0">@Model.Car.User?.FullName</h6>
+                            <p class="text-muted mb-0">Chủ xe</p>
+                        </div>
+                    </div>
+
+                    @if (Model.Car.Province != null)
+                    {
+                        <div class="mt-2">
+                            <i class="bi bi-geo-alt me-2 text-primary"></i>
+                            <span>@Model.Car.Province.Name</span>
+                            @if (!string.IsNullOrEmpty(Model.Car.DetailedAddress))
+                            {
+                                <p class="text-muted small ms-4">@Model.Car.DetailedAddress</p>
+                            }
+                        </div>
+                    }
+
+                    <hr>
+                    <div class="text-center">
+                        <a href="#" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-chat-dots me-1"></i> Liên hệ chủ xe
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <!-- Thêm Bootstrap Icons CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <script src="~/js/model-viewer-init.js"></script>
+    <script>
+        // Đặt giá trị tối thiểu cho EndDate theo StartDate
+        document.getElementById('StartDate').addEventListener('change', function() {
+            const startDate = new Date(this.value);
+            const nextDay = new Date(startDate);
+            nextDay.setDate(nextDay.getDate() + 1);
+
+            const endDateInput = document.getElementById('EndDate');
+            const formattedDate = nextDay.toISOString().split('T')[0];
+            endDateInput.min = formattedDate;
+
+            // Nếu EndDate nhỏ hơn StartDate + 1, cập nhật giá trị của EndDate
+            if(new Date(endDateInput.value) <= startDate) {
+                endDateInput.value = formattedDate;
+            }
+        });
+
+        // Xử lý modal xem ảnh lớn
+        var imageModal = document.getElementById('imageModal');
+        if (imageModal) {
+            imageModal.addEventListener('show.bs.modal', function (event) {
+                var button = event.relatedTarget;
+                var imgSrc = button.getAttribute('data-bs-src');
+                var modalImg = document.getElementById('modalImage');
+                modalImg.src = imgSrc;
+            });
+        }
+
+        // Tải model viewer và khởi tạo
+        document.addEventListener('DOMContentLoaded', function() {
+        @if (Model.Car.CarModel3D != null)
+        {
+            @:initializeModelViewer('model3d-container', '@Model.Car.CarModel3D.FileUrl', '@Model.Car.Name');
+        }
+        });
+    </script>
+}

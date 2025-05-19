@@ -1,0 +1,66 @@
+﻿body {
+}
+/* Rating stars */
+.stars-container {
+    display: inline-block;
+    position: relative;
+    font-size: 1.25rem;
+}
+
+.stars-inactive {
+    color: #ccc;
+}
+
+.stars-active {
+    color: #ffca08;
+    position: absolute;
+    top: 0;
+    left: 0;
+    overflow: hidden;
+}
+
+/* Avatar */
+.avatar {
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+/* Custom star rating input */
+.rating-stars {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: center;
+    gap: 10px;
+}
+
+.rating-stars input {
+    display: none;
+}
+
+.rating-stars label {
+    cursor: pointer;
+    font-size: 2rem;
+    color: #ccc;
+    transition: color 0.2s;
+}
+
+.rating-stars input:checked ~ label {
+    color: #ffca08;
+}
+
+.rating-stars label:hover,
+.rating-stars label:hover ~ label {
+    color: #ffca08;
+}
+
+.rating-stars input:checked + label:hover,
+.rating-stars input:checked ~ label:hover,
+.rating-stars label:hover ~ input:checked ~ label,
+.rating-stars input:checked ~ label:hover ~ label {
+    color: #ffb908;
+}
