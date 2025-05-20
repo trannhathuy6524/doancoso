@@ -38,5 +38,18 @@ namespace GotoCarRental.Models
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
         public ICollection<Payment> Payments { get; set; }
+
+        
+        public enum RentalType
+        {
+            ByDay = 0,
+            ByHour = 1
+        }
+
+        public RentalType Type { get; set; } = RentalType.ByDay;
+        public TimeSpan? StartTime { get; set; }
+        public TimeSpan? EndTime { get; set; }
+        public int? Hours { get; set; } // Số giờ thuê khi thuê theo giờ
+
     }
 }

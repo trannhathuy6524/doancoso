@@ -102,6 +102,7 @@ namespace GotoCarRental.Repository
             existingCar.IsAvailable = car.IsAvailable;
             existingCar.IsApproved = car.IsApproved;
             existingCar.UpdatedAt = car.UpdatedAt;
+            existingCar.PricePerHour = car.PricePerHour;
 
             await _context.SaveChangesAsync();
         }

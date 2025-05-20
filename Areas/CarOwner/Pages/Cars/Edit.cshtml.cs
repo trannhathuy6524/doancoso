@@ -134,6 +134,12 @@ namespace GotoCarRental.Areas.CarOwner.Pages.Cars
                 Car.CreatedAt = existingCar.CreatedAt;
                 Car.UpdatedAt = DateTime.Now;
 
+                // Đảm bảo giá trị PricePerHour là hợp lệ
+                if (Car.PricePerHour < 0)
+                {
+                    Car.PricePerHour = 0;
+                }
+
                 // Cập nhật thông tin xe
                 await _carRepository.UpdateAsync(Car);
 

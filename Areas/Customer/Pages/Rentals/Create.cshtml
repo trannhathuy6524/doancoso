@@ -111,18 +111,58 @@
                         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
                         <div class="mb-3">
-                            <label asp-for="StartDate" class="form-label">Ngày bắt đầu</label>
-                            <input asp-for="StartDate" type="date" class="form-control" 
-                                   min="@DateTime.Today.ToString("yyyy-MM-dd")" required>
-                            <span asp-validation-for="StartDate" class="text-danger"></span>
+                            <label class="form-label">Hình thức thuê</label>
+                            <div class="btn-group w-100" role="group">
+                                <input type="radio" class="btn-check" name="rentalType" id="rentalTypeDay" value="ByDay" checked asp-for="RentalType">
+                                <label class="btn btn-outline-primary" for="rentalTypeDay">Thuê theo ngày</label>
+
+                                <input type="radio" class="btn-check" name="rentalType" id="rentalTypeHour" value="ByHour" asp-for="RentalType">
+                                <label class="btn btn-outline-primary" for="rentalTypeHour">Thuê theo giờ</label>
+                            </div>
+                        </div>
+                        <!-- Phần thuê theo ngày (hiển thị khi chọn thuê theo ngày) -->
+                        <div id="dayRentalSection">
+                            <!-- Giữ nguyên phần thuê theo ngày hiện tại -->
+                            <div class="mb-3">
+                                <label asp-for="StartDate" class="form-label">Ngày bắt đầu</label>
+                                <input asp-for="StartDate" type="date" class="form-control" min="@DateTime.Today.ToString("yyyy-MM-dd")" required>
+                                <span asp-validation-for="StartDate" class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="EndDate" class="form-label">Ngày kết thúc</label>
+                                <input asp-for="EndDate" type="date" class="form-control" min="@DateTime.Today.AddDays(1).ToString("yyyy-MM-dd")" required>
+                                <span asp-validation-for="EndDate" class="text-danger"></span>
+                            </div>
                         </div>
 
-                        <div class="mb-3">
-                            <label asp-for="EndDate" class="form-label">Ngày kết thúc</label>
-                            <input asp-for="EndDate" type="date" class="form-control" 
-                                   min="@DateTime.Today.AddDays(1).ToString("yyyy-MM-dd")" required>
-                            <span asp-validation-for="EndDate" class="text-danger"></span>
+                        <!-- Phần thuê theo giờ (hiển thị khi chọn thuê theo giờ) -->
+                        <div id="hourRentalSection" style="display: none;">
+                            <div class="mb-3">
+                                <label asp-for="RentalDate" class="form-label">Ngày thuê</label>
+                                <input asp-for="RentalDate" type="date" class="form-control" min="@DateTime.Today.ToString("yyyy-MM-dd")" required>
+                                <span asp-validation-for="RentalDate" class="text-danger"></span>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-6">
+                                    <div class="mb-3">
+                                        <label asp-for="StartTime" class="form-label">Giờ bắt đầu</label>
+                                        <input asp-for="StartTime" type="time" class="form-control" value="08:00" required>
+                                        <span asp-validation-for="StartTime" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="mb-3">
+                                        <label asp-for="EndTime" class="form-label">Giờ kết thúc</label>
+                                        <input asp-for="EndTime" type="time" class="form-control" value="22:00" required>
+                                        <span asp-validation-for="EndTime" class="text-danger"></span>
+                                    </div>
+                                </div>
+
+                            </div>
                         </div>
+                       
                         
                         <div class="d-grid mb-3">
                             <button type="submit" asp-page-handler="Calculate" asp-route-id="@Model.Car.Id" formmethod="post" class="btn btn-outline-primary">
@@ -142,22 +182,39 @@
 
                         <hr>
 
+
                         <div class="mb-3">
-                            <div class="d-flex justify-content-between">
-                                <span>Giá thuê/ngày:</span>
-                                <span>@Model.Car.PricePerDay.ToString("N0") VNĐ</span>
-                            </div>
-                            
-                            <div class="d-flex justify-content-between mb-2">
-                                <span>Số ngày thuê:</span>
-                                <span>@Model.Days ngày</span>
-                            </div>
-                            
+                            @if (Model.RentalType == GotoCarRental.Models.Rental.RentalType.ByDay)
+                            {
+                                <div class="d-flex justify-content-between">
+                                    <span>Giá thuê/ngày:</span>
+                                    <span>@Model.Car.PricePerDay.ToString("N0") VNĐ</span>
+                                </div>
+
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Số ngày thuê:</span>
+                                    <span>@Model.Days ngày</span>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="d-flex justify-content-between">
+                                    <span>Giá thuê/giờ:</span>
+                                    <span>@Model.Car.PricePerHour.ToString("N0") VNĐ</span>
+                                </div>
+
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Số giờ thuê:</span>
+                                    <span>@Model.Hours giờ</span>
+                                </div>
+                            }
+
                             <div class="d-flex justify-content-between">
                                 <span class="fw-bold">Tổng tiền:</span>
                                 <span class="fw-bold fs-5 text-primary">@Model.TotalPrice.ToString("N0") VNĐ</span>
                             </div>
                         </div>
+
 
                         @if (!Model.IsAvailable)
                         {
@@ -234,18 +291,46 @@
             // Tự động submit form để tính lại giá
             document.querySelector('button[asp-page-handler="Calculate"]').click();
         });
-        
-        // Khởi tạo FullCalendar để hiển thị lịch đặt xe
+
+        // Xử lý khi giờ bắt đầu thay đổi
+        document.getElementById('StartTime')?.addEventListener('change', function() {
+            // Tự động submit form để tính lại giá
+            document.querySelector('button[asp-page-handler="Calculate"]').click();
+        });
+
+        // Xử lý khi ngày thuê theo giờ thay đổi
+        document.getElementById('RentalDate')?.addEventListener('change', function() {
+            // Tự động submit form để tính lại giá
+            document.querySelector('button[asp-page-handler="Calculate"]').click();
+        });
+
+        // Xử lý khi giờ kết thúc thay đổi
+        document.getElementById('EndTime')?.addEventListener('change', function() {
+            // Tự động submit form để tính lại giá
+            document.querySelector('button[asp-page-handler="Calculate"]').click();
+        });
+
+                // Khởi tạo FullCalendar để hiển thị lịch đặt xe
         document.addEventListener('DOMContentLoaded', function() {
             const calendarEl = document.getElementById('calendar');
-            
+
             // Lấy danh sách ngày không khả dụng từ model
             const unavailableDates = @Json.Serialize(Model.UnavailableDates?.Select(d => d.ToString("yyyy-MM-dd")));
-            
-            // Lấy ngày bắt đầu và kết thúc được chọn
-            const selectedStart = '@Model.StartDate.ToString("yyyy-MM-dd")';
-            const selectedEnd = '@Model.EndDate.ToString("yyyy-MM-dd")';
-            
+
+            // Khởi tạo biến lưu ngày bắt đầu và kết thúc
+            let selectedStart, selectedEnd;
+
+            // Kiểm tra chế độ thuê và lấy ngày tương ứng
+            if ('@Model.RentalType' === 'ByDay') {
+                // Lấy ngày bắt đầu và kết thúc được chọn cho thuê theo ngày
+                selectedStart = '@Model.StartDate.ToString("yyyy-MM-dd")';
+                selectedEnd = '@Model.EndDate.ToString("yyyy-MM-dd")';
+            } else {
+                // Lấy ngày thuê cho thuê theo giờ
+                selectedStart = '@(Model.RentalDate.HasValue ? Model.RentalDate.Value.ToString("yyyy-MM-dd") : Model.StartDate.ToString("yyyy-MM-dd"))';
+                selectedEnd = selectedStart; // Với thuê theo giờ, ngày bắt đầu và kết thúc là cùng ngày
+            }
+
             const calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'dayGridMonth',
                 headerToolbar: {
@@ -261,7 +346,7 @@
                         display: 'background',
                         backgroundColor: 'rgba(255,0,0,0.25)'
                     })),
-                    
+
                     // Thêm ngày đã chọn
                     {
                         start: selectedStart,
@@ -272,9 +357,71 @@
                 ],
                 locale: 'vi'
             });
-            
+
             calendar.render();
+
+            // Cập nhật calendar khi thay đổi loại thuê
+            document.querySelectorAll('input[name="rentalType"]').forEach(input => {
+                input.addEventListener('change', function() {
+                    // Force rerender by clicking the calculate button
+                    document.querySelector('button[asp-page-handler="Calculate"]').click();
+                });
+            });
         });
+
+
+        // JavaScript để chuyển đổi giữa hai chế độ thuê
+        document.addEventListener('DOMContentLoaded', function() {
+            const rentalTypeDay = document.getElementById('rentalTypeDay');
+            const rentalTypeHour = document.getElementById('rentalTypeHour');
+            const dayRentalSection = document.getElementById('dayRentalSection');
+            const hourRentalSection = document.getElementById('hourRentalSection');
+
+            function toggleRentalSections() {
+                if (rentalTypeDay.checked) {
+                    dayRentalSection.style.display = 'block';
+                    hourRentalSection.style.display = 'none';
+                } else {
+                    dayRentalSection.style.display = 'none';
+                    hourRentalSection.style.display = 'block';
+                }
+                   // Trigger price calculation to update calendar
+                document.querySelector('button[asp-page-handler="Calculate"]').click();
+
+            }
+
+            rentalTypeDay.addEventListener('change', toggleRentalSections);
+            rentalTypeHour.addEventListener('change', toggleRentalSections);
+
+            // Chạy một lần đầu để thiết lập trạng thái ban đầu
+            toggleRentalSections();
+
+        });
+
+                // JavaScript để đặt giá trị mặc định cho giờ bắt đầu và kết thúc
+        document.addEventListener('DOMContentLoaded', function() {
+            // Đặt giá trị mặc định cho giờ bắt đầu và kết thúc
+            const setDefaultTimes = function() {
+                if (!document.getElementById('StartTime').value) {
+                    document.getElementById('StartTime').value = '08:00';
+                }
+                if (!document.getElementById('EndTime').value) {
+                    document.getElementById('EndTime').value = '22:00';
+                }
+            };
+
+            // Gọi hàm khi trang tải lần đầu
+            setDefaultTimes();
+
+            // Gọi hàm khi chuyển từ thuê ngày sang thuê giờ
+            document.getElementById('rentalTypeHour').addEventListener('change', function() {
+                if (this.checked) {
+                    setDefaultTimes();
+                }
+            });
+        });
+
+
     </script>
     
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}

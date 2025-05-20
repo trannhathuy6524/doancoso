@@ -354,24 +354,68 @@
             <div class="card shadow-sm mb-4 sticky-top" style="top: 20px; z-index: 1020;">
                 <div class="card-header bg-primary text-white">
                     <h5 class="mb-0">@Model.Car.PricePerDay.ToString("N0") VNĐ/ngày</h5>
+                    <h5 class="mb-0">@Model.Car.PricePerHour.ToString("N0") VNĐ/giờ</h5>
                 </div>
                 <div class="card-body">
                     <form method="post" asp-page-handler="Calculate" asp-route-id="@Model.Car.Id">
-                        <div class="mb-3">
-                            <label asp-for="StartDate" class="form-label">Ngày bắt đầu</label>
-                            <input asp-for="StartDate" type="date" class="form-control" min="@DateTime.Today.ToString("yyyy-MM-dd")" required />
+                        <!-- Thêm tab để chọn phương thức thuê -->
+                        @if (Model.Car.PricePerHour > 0)
+                        {
+                            <div class="mb-3">
+                                <div class="btn-group w-100" role="group" aria-label="Phương thức thuê">
+                                    <input type="radio" class="btn-check" name="RentalType" id="rentalTypeDay" value="ByDay"
+                                           checked="@(Model.RentalType == Rental.RentalType.ByDay ? "checked" : null)" autocomplete="off">
+                                    <label class="btn btn-outline-primary" for="rentalTypeDay">Theo ngày</label>
+
+                                    <input type="radio" class="btn-check" name="RentalType" id="rentalTypeHour" value="ByHour"
+                                           checked="@(Model.RentalType == Rental.RentalType.ByHour ? "checked" : null)" autocomplete="off">
+                                    <label class="btn btn-outline-primary" for="rentalTypeHour">Theo giờ</label>
+                                </div>
+                            </div>
+                        }
+
+                        <!-- Phần thuê theo ngày -->
+                        <div id="dayRentalSection" style="@(Model.RentalType == Rental.RentalType.ByHour ? "display:none" : "")">
+                            <div class="mb-3">
+                                <label asp-for="StartDate" class="form-label">Ngày bắt đầu</label>
+                                <input asp-for="StartDate" type="date" class="form-control" min="@DateTime.Today.ToString("yyyy-MM-dd")" required />
+                            </div>
+                            <div class="mb-3">
+                                <label asp-for="EndDate" class="form-label">Ngày kết thúc</label>
+                                <input asp-for="EndDate" type="date" class="form-control" min="@DateTime.Today.AddDays(1).ToString("yyyy-MM-dd")" required />
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label asp-for="EndDate" class="form-label">Ngày kết thúc</label>
-                            <input asp-for="EndDate" type="date" class="form-control" min="@DateTime.Today.AddDays(1).ToString("yyyy-MM-dd")" required />
+
+                        <!-- Phần thuê theo giờ -->
+                        <div id="hourRentalSection" style="@(Model.RentalType == Rental.RentalType.ByDay ? "display:none" : "")">
+                            <div class="mb-3">
+                                <label asp-for="RentalDate" class="form-label">Ngày thuê</label>
+                                <input asp-for="RentalDate" type="date" class="form-control" min="@DateTime.Today.ToString("yyyy-MM-dd")" required />
+                            </div>
+                            <div class="row">
+                                <div class="col-6">
+                                    <div class="mb-3">
+                                        <label asp-for="StartTime" class="form-label">Giờ bắt đầu</label>
+                                        <input asp-for="StartTime" type="time" class="form-control" required />
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="mb-3">
+                                        <label asp-for="EndTime" class="form-label">Giờ kết thúc</label>
+                                        <input asp-for="EndTime" type="time" class="form-control" required />
+                                    </div>
+                                </div>
+                            </div>
                         </div>
+
                         <div class="d-grid">
                             <button type="submit" class="btn btn-outline-primary mb-3">
                                 <i class="bi bi-calculator me-2"></i>Tính giá
                             </button>
                         </div>
 
-                        <div class="mb-3">
+                        <!-- Phần hiển thị giá thuê theo ngày -->
+                        <div id="priceDaySection" class="mb-3" style="@(Model.RentalType == Rental.RentalType.ByHour ? "display:none" : "")">
                             <div class="d-flex justify-content-between mb-2">
                                 <span>Giá thuê/ngày:</span>
                                 <span>@Model.Car.PricePerDay.ToString("N0") VNĐ</span>
@@ -387,10 +431,30 @@
                             </div>
                         </div>
 
+                        <!-- Phần hiển thị giá thuê theo giờ -->
+                        <div id="priceHourSection" class="mb-3" style="@(Model.RentalType == Rental.RentalType.ByDay ? "display:none" : "")">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Giá thuê/giờ:</span>
+                                <span>@Model.Car.PricePerHour.ToString("N0") VNĐ</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Số giờ thuê:</span>
+                                <span>@Model.Hours giờ</span>
+                            </div>
+                            <hr>
+                            <div class="d-flex justify-content-between fw-bold">
+                                <span>Tổng cộng:</span>
+                                <span>@(Model.RentalType == Rental.RentalType.ByHour ? (Model.Hours * Model.Car.PricePerHour).ToString("N0") : Model.TotalPrice.ToString("N0")) VNĐ</span>
+                            </div>
+                        </div>
+
                         <div class="d-grid">
                             <a asp-area="Customer" asp-page="/Rentals/Create" asp-route-id="@Model.Car.Id"
-                               asp-route-startDate="@Model.StartDate?.ToString("yyyy-MM-dd")"
-                               asp-route-endDate="@Model.EndDate?.ToString("yyyy-MM-dd")"
+                               asp-route-rentalType="@Model.RentalType"
+                               asp-route-startDate="@(Model.RentalType == Rental.RentalType.ByDay ? Model.StartDate?.ToString("yyyy-MM-dd") : Model.RentalDate?.ToString("yyyy-MM-dd"))"
+                               asp-route-endDate="@(Model.RentalType == Rental.RentalType.ByDay ? Model.EndDate?.ToString("yyyy-MM-dd") : null)"
+                               asp-route-startTime="@(Model.RentalType == Rental.RentalType.ByHour ? Model.StartTime?.ToString() : null)"
+                               asp-route-endTime="@(Model.RentalType == Rental.RentalType.ByHour ? Model.EndTime?.ToString() : null)"
                                class="btn btn-primary">
                                 <i class="bi bi-cart-plus me-2"></i>Đặt xe
                             </a>

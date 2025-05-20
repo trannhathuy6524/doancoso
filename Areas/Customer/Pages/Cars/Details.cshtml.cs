@@ -41,6 +41,11 @@ namespace GotoCarRental.Areas.Customer.Pages.Cars
 
         [BindProperty]
         public decimal TotalPrice { get; set; }
+        public Rental.RentalType RentalType { get; set; } = Rental.RentalType.ByDay;
+        public DateTime? RentalDate { get; set; } = DateTime.Today;
+        public TimeSpan? StartTime { get; set; }
+        public TimeSpan? EndTime { get; set; }
+        public int Hours { get; set; } = 1;
 
         public async Task<IActionResult> OnGetAsync(int? id)
         {
@@ -87,29 +92,55 @@ namespace GotoCarRental.Areas.Customer.Pages.Cars
             return Page();
         }
 
-        public async Task<IActionResult> OnPostCalculateAsync(int id)
+        public async Task<IActionResult> OnPostCalculateAsync(int id, Rental.RentalType rentalType)
         {
-            if (StartDate == null || EndDate == null || StartDate > EndDate)
-            {
-                return RedirectToPage(new { id });
-            }
-
+            RentalType = rentalType;
             Car = await _carRepository.GetByIdAsync(id);
+
             if (Car == null)
             {
                 return NotFound();
             }
 
-            Days = (int)(EndDate.Value - StartDate.Value).TotalDays + 1;
-            if (Days < 1) Days = 1;
+            if (RentalType == Rental.RentalType.ByDay)
+            {
+                if (StartDate == null || EndDate == null || StartDate > EndDate)
+                {
+                    ModelState.AddModelError(string.Empty, "Ngày kết thúc phải sau ngày bắt đầu.");
+                    return Page();
+                }
 
-            TotalPrice = Car.PricePerDay * Days;
+                Days = (EndDate.Value - StartDate.Value).Days + 1;
+                if (Days < 1) Days = 1;
 
+                TotalPrice = Car.PricePerDay * Days;
+            }
+            else // ByHour
+            {
+                if (RentalDate == null || !StartTime.HasValue || !EndTime.HasValue)
+                {
+                    ModelState.AddModelError(string.Empty, "Vui lòng chọn đầy đủ ngày và giờ thuê.");
+                    return Page();
+                }
+
+                if (StartTime >= EndTime)
+                {
+                    ModelState.AddModelError(string.Empty, "Giờ kết thúc phải sau giờ bắt đầu.");
+                    return Page();
+                }
+
+                var duration = EndTime.Value - StartTime.Value;
+                Hours = (int)Math.Ceiling(duration.TotalHours);
+                if (Hours < 1) Hours = 1;
+
+                TotalPrice = Car.PricePerHour * Hours;
+            }
+
+            // Lấy các thông tin khác
             Features = await _carRepository.GetCarFeaturesAsync(id);
             Reviews = await _carRepository.GetCarReviewsAsync(id);
             AverageRating = await _carRepository.GetCarAverageRatingAsync(id);
             RelatedCars = await _carRepository.GetRelatedCarsAsync(id, 4);
-
             IsLoggedIn = User.Identity.IsAuthenticated;
 
             return Page();

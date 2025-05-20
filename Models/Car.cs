@@ -59,6 +59,11 @@ namespace GotoCarRental.Models
         [MaxLength(255)]
         public string DetailedAddress { get; set; }
 
+        
+        [Range(1, double.MaxValue, ErrorMessage = "Giá thuê theo giờ phải lớn hơn 0")]
+        public decimal PricePerHour { get; set; }
+
+
     }
 
 }

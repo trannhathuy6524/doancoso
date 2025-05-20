@@ -285,6 +285,62 @@ namespace GotoCarRental.Repository
             return payment;
         }
 
+        public async Task<bool> IsCarAvailableByHourAsync(int carId, DateTime startDateTime, DateTime endDateTime)
+        {
+            // Kiểm tra xem xe có tồn tại và khả dụng không
+            var car = await _context.Cars.FindAsync(carId);
+            if (car == null || !car.IsAvailable || !car.IsApproved)
+                return false;
+
+            // Xác định ngày của startDateTime và endDateTime
+            DateTime startDate = startDateTime.Date;
+            DateTime endDate = endDateTime.Date;
+
+            // Lấy các đơn thuê chưa bị hủy trong cùng ngày hoặc ngày trùng với khoảng thời gian yêu cầu
+            var rentalsOnSameDay = await _context.Rentals
+                .Where(r => r.CarId == carId && r.Status != 2) // Không phải đơn đã hủy
+                .Where(r => (r.StartDate.Date <= endDate && r.EndDate.Date >= startDate))
+                .ToListAsync();
+
+            // Nếu không có đơn thuê nào trong ngày này, xe khả dụng
+            if (!rentalsOnSameDay.Any())
+                return true;
+
+            // Kiểm tra từng đơn thuê xem có chồng chéo thời gian không
+            foreach (var rental in rentalsOnSameDay)
+            {
+                // Đối với các đơn thuê theo ngày, cả ngày đều được đặt
+                if (rental.Type == Rental.RentalType.ByDay)
+                {
+                    // Nếu thuê theo ngày mà ngày trùng với khoảng thời gian yêu cầu, xe không khả dụng
+                    if (startDate <= rental.EndDate && endDate >= rental.StartDate)
+                        return false;
+                }
+                // Đối với các đơn thuê theo giờ, chỉ kiểm tra chồng chéo thời gian nếu cùng ngày
+                else if (rental.Type == Rental.RentalType.ByHour)
+                {
+                    // Chỉ kiểm tra chồng chéo nếu có thông tin giờ
+                    if (rental.StartTime.HasValue && rental.EndTime.HasValue)
+                    {
+                        // Tạo DateTime đầy đủ từ ngày và giờ của rental
+                        DateTime rentalStart = rental.StartDate.Date.Add(rental.StartTime.Value);
+                        DateTime rentalEnd = rental.StartDate.Date.Add(rental.EndTime.Value);
+
+                        // Kiểm tra chồng chéo thời gian
+                        if (startDateTime < rentalEnd && endDateTime > rentalStart)
+                            return false; // Có chồng chéo thời gian, không khả dụng
+                    }
+                    else
+                    {
+                        // Nếu không có thông tin giờ cụ thể, xem như xe không khả dụng
+                        return false;
+                    }
+                }
+            }
+
+            // Nếu không có đơn thuê chồng chéo, xe khả dụng
+            return true;
+        }
 
     }
 }

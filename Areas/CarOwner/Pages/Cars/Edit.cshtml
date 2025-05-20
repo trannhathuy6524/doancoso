@@ -98,10 +98,35 @@
                         </div>
 
 
-                        <div class="mb-3">
-                            <label asp-for="Car.PricePerDay" class="form-label">Giá thuê mỗi ngày (VNĐ)</label>
-                            <input asp-for="Car.PricePerDay" class="form-control" type="number" min="1" />
-                            <span asp-validation-for="Car.PricePerDay" class="text-danger"></span>
+
+                        <!-- Thêm section Thiết lập giá thuê -->
+                        <h5 class="mb-3 mt-4">Thiết lập giá thuê</h5>
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label asp-for="Car.PricePerDay" class="form-label">Giá thuê mỗi ngày (VNĐ)</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-light"><i class="bi bi-calendar-day"></i></span>
+                                            <input asp-for="Car.PricePerDay" class="form-control" type="number" min="1" />
+                                        </div>
+                                        <span asp-validation-for="Car.PricePerDay" class="text-danger"></span>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label asp-for="Car.PricePerHour" class="form-label">Giá thuê mỗi giờ (VNĐ)</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-light"><i class="bi bi-clock"></i></span>
+                                            <input asp-for="Car.PricePerHour" class="form-control" type="number" min="0" />
+                                        </div>
+                                        <span asp-validation-for="Car.PricePerHour" class="text-danger"></span>
+                                        <div class="form-text">Đặt giá > 0 để kích hoạt tính năng thuê theo giờ.</div>
+                                    </div>
+                                </div>
+                                <div class="alert alert-info mb-0">
+                                    <i class="bi bi-info-circle-fill me-2"></i>
+                                    <span>Bạn có thể cung cấp cả hai tùy chọn thuê theo ngày và theo giờ để tăng tính linh hoạt cho khách hàng.</span>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Tính năng xe -->

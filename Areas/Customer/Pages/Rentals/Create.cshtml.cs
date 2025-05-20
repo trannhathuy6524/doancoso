@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
+using static GotoCarRental.Models.Rental;
 
 namespace GotoCarRental.Areas.Customer.Pages.Rentals
 {
@@ -44,6 +45,20 @@ namespace GotoCarRental.Areas.Customer.Pages.Rentals
 
         public bool IsAvailable { get; set; }
         public IEnumerable<DateTime> UnavailableDates { get; set; }
+        [BindProperty]
+        public RentalType RentalType { get; set; } = RentalType.ByDay;
+
+        [BindProperty]
+        public DateTime? RentalDate { get; set; } = DateTime.Today;
+
+        [BindProperty]
+        public TimeSpan? StartTime { get; set; } = new TimeSpan(8, 0, 0); // 8:00 AM
+
+        [BindProperty]
+        public TimeSpan? EndTime { get; set; } = new TimeSpan(22, 0, 0); // 10:00 PM
+
+        [BindProperty]
+        public int Hours { get; set; } = 1;
 
         public async Task<IActionResult> OnGetAsync(int? id, string startDate = null, string endDate = null)
         {
@@ -90,13 +105,7 @@ namespace GotoCarRental.Areas.Customer.Pages.Rentals
             if (Car == null || !Car.IsApproved)
                 return NotFound();
 
-            // Kiểm tra xem xe có khả dụng trong khoảng thời gian đã chọn không
-            var isAvailable = await _rentalRepository.IsCarAvailableAsync(id, StartDate, EndDate);
-            if (!isAvailable)
-            {
-                TempData["ErrorMessage"] = "Xe đã được đặt trong khoảng thời gian bạn chọn. Vui lòng chọn khoảng thời gian khác.";
-                return RedirectToPage(new { id });
-            }
+            bool isAvailable;
 
             // Tạo đơn thuê mới
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -104,15 +113,53 @@ namespace GotoCarRental.Areas.Customer.Pages.Rentals
             {
                 UserId = userId,
                 CarId = id,
-                StartDate = StartDate,
-                EndDate = EndDate,
-                TotalPrice = TotalPrice,
                 Status = 0, // Chờ xác nhận
                 PaymentStatus = "Pending",
                 PaymentMethod = PaymentMethod,
                 CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
+                UpdatedAt = DateTime.UtcNow,
+                Type = RentalType
             };
+
+            if (RentalType == RentalType.ByDay)
+            {
+                // Kiểm tra xe có khả dụng không cho thuê theo ngày
+                isAvailable = await _rentalRepository.IsCarAvailableAsync(id, StartDate, EndDate);
+
+                if (!isAvailable)
+                {
+                    TempData["ErrorMessage"] = "Xe đã được đặt trong khoảng thời gian ngày bạn chọn. Vui lòng chọn khoảng thời gian khác.";
+                    return RedirectToPage(new { id });
+                }
+
+                // Thiết lập thông tin cho thuê theo ngày
+                rental.StartDate = StartDate;
+                rental.EndDate = EndDate;
+                rental.TotalPrice = Car.PricePerDay * Days;
+            }
+            else // RentalType.ByHour
+            {
+                // Tạo DateTime đầy đủ từ ngày và giờ
+                var startDateTime = RentalDate.Value.Date.Add(StartTime.Value);
+                var endDateTime = RentalDate.Value.Date.Add(EndTime.Value);
+
+                // Kiểm tra xe có khả dụng không cho thuê theo giờ
+                isAvailable = await _rentalRepository.IsCarAvailableByHourAsync(id, startDateTime, endDateTime);
+
+                if (!isAvailable)
+                {
+                    TempData["ErrorMessage"] = "Xe đã được đặt trong khoảng thời gian giờ bạn chọn. Vui lòng chọn khoảng thời gian khác.";
+                    return RedirectToPage(new { id });
+                }
+
+                // Thiết lập thông tin cho thuê theo giờ
+                rental.StartDate = RentalDate.Value.Date;
+                rental.EndDate = RentalDate.Value.Date;
+                rental.StartTime = StartTime;
+                rental.EndTime = EndTime;
+                rental.Hours = Hours;
+                rental.TotalPrice = Car.PricePerHour * Hours;
+            }
 
             try
             {
@@ -127,25 +174,51 @@ namespace GotoCarRental.Areas.Customer.Pages.Rentals
             }
         }
 
+
         public async Task<IActionResult> OnPostCalculateAsync(int id)
         {
-            if (StartDate > EndDate)
+            if (RentalType == RentalType.ByDay)
             {
-                TempData["ErrorMessage"] = "Ngày kết thúc phải sau ngày bắt đầu.";
-                return RedirectToPage(new { id });
+                if (StartDate > EndDate)
+                {
+                    TempData["ErrorMessage"] = "Ngày kết thúc phải sau ngày bắt đầu.";
+                    return RedirectToPage(new { id });
+                }
+
+                Days = (EndDate - StartDate).Days + 1;
+                if (Days < 1) Days = 1;
+
+                Car = await _carRepository.GetByIdAsync(id);
+                if (Car == null) return NotFound();
+
+                TotalPrice = Car.PricePerDay * Days;
+                IsAvailable = await _rentalRepository.IsCarAvailableAsync(id, StartDate, EndDate);
+            }
+            else // RentalType.ByHour
+            {
+                if (StartTime >= EndTime)
+                {
+                    TempData["ErrorMessage"] = "Giờ kết thúc phải sau giờ bắt đầu.";
+                    return RedirectToPage(new { id });
+                }
+
+                // Tính số giờ thuê
+                Hours = (int)Math.Ceiling((EndTime.Value - StartTime.Value).TotalHours);
+                if (Hours < 1) Hours = 1;
+
+                Car = await _carRepository.GetByIdAsync(id);
+                if (Car == null) return NotFound();
+
+                TotalPrice = Car.PricePerHour * Hours;
+
+                // Tạo DateTime đầy đủ từ ngày và giờ
+                var startDateTime = RentalDate.Value.Date.Add(StartTime.Value);
+                var endDateTime = RentalDate.Value.Date.Add(EndTime.Value);
+
+                // Kiểm tra xem xe có khả dụng không trong khoảng thời gian đã chọn
+                IsAvailable = await _rentalRepository.IsCarAvailableByHourAsync(id, startDateTime, endDateTime);
             }
 
-            Days = (EndDate - StartDate).Days + 1;
-            if (Days < 1) Days = 1;
-
-            Car = await _carRepository.GetByIdAsync(id);
-            if (Car == null)
-            {
-                return NotFound();
-            }
-
-            TotalPrice = Car.PricePerDay * Days;
-            IsAvailable = await _rentalRepository.IsCarAvailableAsync(id, StartDate, EndDate);
             UnavailableDates = await GetUnavailableDates(id);
 
             if (!IsAvailable)
@@ -156,6 +229,7 @@ namespace GotoCarRental.Areas.Customer.Pages.Rentals
             return Page();
         }
 
+        // Cập nhật phương thức GetUnavailableDates để xử lý thuê theo giờ
         private async Task<IEnumerable<DateTime>> GetUnavailableDates(int carId)
         {
             // Lấy tất cả các đơn thuê của xe này
@@ -164,13 +238,38 @@ namespace GotoCarRental.Areas.Customer.Pages.Rentals
 
             foreach (var rental in rentals)
             {
-                for (var date = rental.StartDate; date <= rental.EndDate; date = date.AddDays(1))
+                if (rental.Type == RentalType.ByDay)
                 {
-                    unavailableDates.Add(date.Date);
+                    // Xử lý thuê theo ngày
+                    for (var date = rental.StartDate; date <= rental.EndDate; date = date.AddDays(1))
+                    {
+                        unavailableDates.Add(date.Date);
+                    }
+                }
+                else
+                {
+                    // Với thuê theo giờ, thêm ngày đó nếu thuê trong một khoảng giờ dài 
+                    // (ví dụ: > 8 giờ hoặc trong giờ làm việc chính)
+                    if (rental.StartTime.HasValue && rental.EndTime.HasValue)
+                    {
+                        var duration = rental.EndTime.Value - rental.StartTime.Value;
+                        // Nếu thuê hơn 8 giờ, coi như ngày đó không khả dụng
+                        if (duration.TotalHours >= 8)
+                        {
+                            unavailableDates.Add(rental.StartDate.Date);
+                        }
+                        // Hoặc nếu thuê trong giờ làm việc chính (9am-5pm)
+                        else if ((rental.StartTime.Value <= TimeSpan.FromHours(9) &&
+                                 rental.EndTime.Value >= TimeSpan.FromHours(17)))
+                        {
+                            unavailableDates.Add(rental.StartDate.Date);
+                        }
+                    }
                 }
             }
 
             return unavailableDates;
         }
+
     }
 }

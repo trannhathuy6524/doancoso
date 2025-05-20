@@ -44,6 +44,8 @@ namespace GotoCarRental.Repository
         Task<Payment> AddPendingPaymentAsync(Payment payment);
         Task<Payment> ConfirmPaymentAsync(int paymentId);
 
+        // Thêm vào IRentalRepository
+        Task<bool> IsCarAvailableByHourAsync(int carId, DateTime startDateTime, DateTime endDateTime);
 
 
     }
