@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Security.Claims;
+using static GotoCarRental.Models.Rental;
 
 namespace GotoCarRental.Areas.Customer.Pages.Rentals
 {
@@ -39,19 +40,48 @@ namespace GotoCarRental.Areas.Customer.Pages.Rentals
             if (Rental == null || Rental.UserId != userId)
                 return NotFound();
 
-            // Tính số ngày thuê
-            RentalDays = (Rental.EndDate - Rental.StartDate).Days + 1;
-            if (RentalDays < 1) RentalDays = 1;
-
-            // Kiểm tra và cập nhật tổng tiền nếu nó bằng 0
-            if (Rental.TotalPrice == 0 && Rental.Car != null && Rental.Car.PricePerDay > 0)
+            // Xử lý đơn thuê theo loại
+            if (Rental.Type == RentalType.ByDay)
             {
-                Rental.TotalPrice = Rental.Car.PricePerDay * RentalDays;
-                await _rentalRepository.UpdateAsync(Rental);
+                // Tính số ngày thuê
+                RentalDays = (Rental.EndDate - Rental.StartDate).Days + 1;
+                if (RentalDays < 1) RentalDays = 1;
+
+                // Kiểm tra và cập nhật tổng tiền nếu nó bằng 0
+                if (Rental.TotalPrice == 0 && Rental.Car != null && Rental.Car.PricePerDay > 0)
+                {
+                    Rental.TotalPrice = Rental.Car.PricePerDay * RentalDays;
+                    await _rentalRepository.UpdateAsync(Rental);
+                }
+            }
+            else // RentalType.ByHour
+            {
+                // Nếu đơn thuê theo giờ nhưng field Hours là null hoặc 0
+                if (!Rental.Hours.HasValue || Rental.Hours == 0)
+                {
+                    // Tính toán số giờ dựa trên StartTime và EndTime
+                    if (Rental.StartTime.HasValue && Rental.EndTime.HasValue)
+                    {
+                        int calculatedHours = (int)Math.Ceiling((Rental.EndTime.Value - Rental.StartTime.Value).TotalHours);
+                        if (calculatedHours < 1) calculatedHours = 1;
+
+                        // Cập nhật số giờ vào đơn thuê
+                        Rental.Hours = calculatedHours;
+
+                        // Kiểm tra và cập nhật tổng tiền nếu cần
+                        if (Rental.TotalPrice == 0 && Rental.Car != null && Rental.Car.PricePerHour > 0)
+                        {
+                            Rental.TotalPrice = Rental.Car.PricePerHour * calculatedHours;
+                        }
+
+                        // Lưu các thay đổi
+                        await _rentalRepository.UpdateAsync(Rental);
+                    }
+                }
             }
 
-            // Lấy danh sách thanh toán
-            Payments = await _rentalRepository.GetPaymentsForRentalAsync(id.Value);
+                // Lấy danh sách thanh toán
+                Payments = await _rentalRepository.GetPaymentsForRentalAsync(id.Value);
 
             // Kiểm tra quyền hủy đơn: chỉ hủy đơn chờ xác nhận
             CanCancel = Rental.Status == 0;

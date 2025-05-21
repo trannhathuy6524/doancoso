@@ -63,6 +63,14 @@ namespace GotoCarRental.Models
         [Range(1, double.MaxValue, ErrorMessage = "Giá thuê theo giờ phải lớn hơn 0")]
         public decimal PricePerHour { get; set; }
 
+        // Thêm tọa độ để lưu vị trí của xe
+        public double? Latitude { get; set; }
+        public double? Longitude { get; set; }
+
+        // Thuộc tính này không lưu vào database, chỉ dùng để hiển thị khoảng cách
+        [NotMapped]
+        public double? DistanceFromUser { get; set; }
+
 
     }
 

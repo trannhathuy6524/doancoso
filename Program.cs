@@ -1,6 +1,7 @@
 ﻿using GotoCarRental.Data;
 using GotoCarRental.Models;
 using GotoCarRental.Repository;
+using GotoCarRental.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
@@ -47,6 +48,8 @@ builder.Services.AddScoped<IReviewRepository, EFReviewRepository>();
 builder.Services.AddScoped<IModel3DTemplateRepository, EFModel3DTemplateRepository>();
 builder.Services.AddScoped<IProvinceRepository, EFProvinceRepository>();
 
+// Đăng ký services
+builder.Services.AddScoped<IGeoLocationService, GeoLocationService>();
 
 
 

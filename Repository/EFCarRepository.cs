@@ -1,5 +1,6 @@
 ﻿using GotoCarRental.Data;
 using GotoCarRental.Models;
+using GotoCarRental.Services;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
@@ -8,10 +9,14 @@ namespace GotoCarRental.Repository
     public class EFCarRepository : ICarRepository
     {
         private readonly ApplicationDbContext _context;
+        private readonly IGeoLocationService _geoLocationService;
 
-        public EFCarRepository(ApplicationDbContext context)
+
+
+        public EFCarRepository(ApplicationDbContext context, IGeoLocationService geoLocationService)
         {
             _context = context;
+            _geoLocationService = geoLocationService;
         }
 
         #region CRUD cơ bản
@@ -103,6 +108,8 @@ namespace GotoCarRental.Repository
             existingCar.IsApproved = car.IsApproved;
             existingCar.UpdatedAt = car.UpdatedAt;
             existingCar.PricePerHour = car.PricePerHour;
+            existingCar.Latitude = car.Latitude;
+            existingCar.Longitude = car.Longitude;
 
             await _context.SaveChangesAsync();
         }
@@ -801,5 +808,34 @@ namespace GotoCarRental.Repository
             }
         }
 
+        // Triển khai phương thức GetNearbyCarsByLocationAsync
+        public async Task<IEnumerable<Car>> GetNearbyCarsByLocationAsync(double latitude, double longitude, double maxDistance, int pageNumber = 1, int pageSize = 20)
+        {
+            // Lấy tất cả xe đã được duyệt và đang khả dụng
+            var cars = await _context.Cars
+                .Include(c => c.Brand)
+                .Include(c => c.Category)
+                .Include(c => c.CarImages)
+                .Include(c => c.Province)
+                .Where(c => c.IsApproved && !c.IsDeleted && c.IsAvailable)
+                .Where(c => c.Latitude != null && c.Longitude != null) // Chỉ lấy xe có tọa độ
+                .ToListAsync();
+
+            // Tính khoảng cách cho mỗi xe
+            foreach (var car in cars)
+            {
+                car.DistanceFromUser = _geoLocationService.CalculateDistance(
+                    latitude, longitude,
+                    car.Latitude.Value, car.Longitude.Value);
+            }
+
+            // Lọc xe theo khoảng cách tối đa và sắp xếp theo khoảng cách gần nhất
+            return cars
+                .Where(c => c.DistanceFromUser <= maxDistance)
+                .OrderBy(c => c.DistanceFromUser)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+        }
     }
 }

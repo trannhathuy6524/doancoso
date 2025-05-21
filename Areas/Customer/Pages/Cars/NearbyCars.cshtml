@@ -1,0 +1,177 @@
+﻿@page
+@model GotoCarRental.Areas.Customer.Pages.Cars.NearbyCarsModel
+@{
+    ViewData["Title"] = "Xe gần bạn";
+}
+
+<div class="container py-5">
+    <h1 class="mb-4">Xe gần vị trí của bạn</h1>
+    
+    @if (!Model.Lat.HasValue || !Model.Lng.HasValue)
+    {
+        <div class="alert alert-info">
+            <p class="mb-3">Cho phép website truy cập vị trí của bạn để tìm các xe gần nhất.</p>
+            <button id="getLocationBtn" class="btn btn-primary">
+                <i class="bi bi-geo-alt me-2"></i>Lấy vị trí của tôi
+            </button>
+        </div>
+    }
+    else if (!Model.NearbyCars.Any())
+    {
+        <div class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            Không tìm thấy xe nào trong phạm vi @Model.MaxDistance km từ vị trí của bạn.
+        </div>
+        
+        <div class="mt-3">
+            <form method="get" class="row g-3 align-items-end">
+                <input type="hidden" name="Lat" value="@Model.Lat" />
+                <input type="hidden" name="Lng" value="@Model.Lng" />
+                
+                <div class="col-md-6">
+                    <label for="maxDistance" class="form-label">Khoảng cách tìm kiếm (km)</label>
+                    <input type="range" class="form-range" id="maxDistance" name="MaxDistance" 
+                           min="1" max="50" step="1" value="@Model.MaxDistance" />
+                    <div class="text-center" id="distanceValue">@Model.MaxDistance km</div>
+                </div>
+                
+                <div class="col-md-6">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-search me-2"></i>Tìm kiếm lại
+                    </button>
+                </div>
+            </form>
+        </div>
+    }
+    else
+    {
+        <div class="mb-4">
+            <form method="get" class="row g-3 align-items-end">
+                <input type="hidden" name="Lat" value="@Model.Lat" />
+                <input type="hidden" name="Lng" value="@Model.Lng" />
+                
+                <div class="col-md-6">
+                    <label for="maxDistance" class="form-label">Khoảng cách tìm kiếm (km)</label>
+                    <input type="range" class="form-range" id="maxDistance" name="MaxDistance" 
+                           min="1" max="50" step="1" value="@Model.MaxDistance" />
+                    <div class="text-center" id="distanceValue">@Model.MaxDistance km</div>
+                </div>
+                
+                <div class="col-md-6">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-search me-2"></i>Tìm kiếm lại
+                    </button>
+                </div>
+            </form>
+        </div>
+        
+        <div class="row">
+            @foreach (var car in Model.NearbyCars)
+            {
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="position-relative">
+                            @if (car.CarImages != null && car.CarImages.Any())
+                            {
+                                var mainImage = car.CarImages.FirstOrDefault(ci => ci.IsMainImage) ?? car.CarImages.First();
+                                <img src="/@(mainImage.ImageUrl.TrimStart('/'))" class="card-img-top" alt="@car.Name" style="height: 200px; object-fit: cover;">
+                            }
+                            else
+                            {
+                                <img src="/images/car-placeholder.png" class="card-img-top" alt="@car.Name" style="height: 200px; object-fit: cover;">
+                            }
+                            
+                            @if (car.DistanceFromUser.HasValue)
+                            {
+                                <span class="position-absolute top-0 end-0 badge bg-primary m-2">
+                                    <i class="bi bi-geo-alt me-1"></i>
+                                    @car.DistanceFromUser.Value.ToString("F1") km
+                                </span>
+                            }
+                        </div>
+                        
+                        <div class="card-body">
+                            <h5 class="card-title">@car.Name</h5>
+                            <p class="text-muted small mb-1">
+                                <i class="bi bi-tag me-1"></i>@car.Brand?.Name
+                                <span class="mx-1">|</span>
+                                <i class="bi bi-car-front me-1"></i>@car.Category?.Name
+                            </p>
+                            <p class="text-primary fw-bold mb-2">@car.PricePerDay.ToString("N0") VNĐ/ngày</p>
+                            <p class="small text-truncate mb-2">
+                                <i class="bi bi-geo-alt me-1"></i>
+                                @(string.IsNullOrEmpty(car.DetailedAddress) ? car.Province?.Name : $"{car.DetailedAddress}, {car.Province?.Name}")
+                            </p>
+                        </div>
+                        
+                        <div class="card-footer bg-white border-top-0">
+                            <div class="d-grid gap-2">
+                                <a asp-area="Customer" asp-page="/Cars/Details" asp-route-id="@car.Id" 
+                                   class="btn btn-outline-primary">
+                                    <i class="bi bi-info-circle me-2"></i>Chi tiết
+                                </a>
+                                <a asp-area="Customer" asp-page="/Rentals/Create" asp-route-id="@car.Id"
+                                   class="btn btn-primary">
+                                    <i class="bi bi-cart-plus me-2"></i>Thuê xe
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+        
+        <div class="text-center mt-3">
+            <p>Đang hiển thị @Model.NearbyCars.Count() xe trong phạm vi @Model.MaxDistance km từ vị trí của bạn.</p>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        // Hiển thị giá trị khoảng cách
+        const distanceSlider = document.getElementById('maxDistance');
+        const distanceValue = document.getElementById('distanceValue');
+        
+        if (distanceSlider) {
+            distanceSlider.addEventListener('input', function() {
+                distanceValue.textContent = this.value + ' km';
+            });
+        }
+        
+        // Xử lý lấy vị trí
+        document.getElementById('getLocationBtn')?.addEventListener('click', function() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    // Success
+                    function(position) {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        window.location.href = `?Lat=${lat}&Lng=${lng}&MaxDistance=10`;
+                    },
+                    // Error
+                    function(error) {
+                        let message;
+                        switch(error.code) {
+                            case error.PERMISSION_DENIED:
+                                message = "Bạn đã từ chối cho phép truy cập vị trí.";
+                                break;
+                            case error.POSITION_UNAVAILABLE:
+                                message = "Không thể xác định vị trí của bạn.";
+                                break;
+                            case error.TIMEOUT:
+                                message = "Quá thời gian xác định vị trí.";
+                                break;
+                            default:
+                                message = "Đã xảy ra lỗi khi xác định vị trí.";
+                                break;
+                        }
+                        alert(message);
+                    }
+                );
+            } else {
+                alert("Trình duyệt của bạn không hỗ trợ định vị.");
+            }
+        });
+    </script>
+}

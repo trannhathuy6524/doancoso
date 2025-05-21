@@ -39,6 +39,30 @@ namespace GotoCarRental.Areas.CarOwner.Pages.Rentals
 
             if (Rental == null)
                 return NotFound();
+            if (Rental.Status == 2 && Rental.PaymentStatus != "Cancelled")
+            {
+                Rental.PaymentStatus = "Cancelled";
+                await _rentalRepository.UpdateAsync(Rental);
+            }
+
+            // Tính số giờ thuê nếu là thuê theo giờ
+            if (Rental.Type == Models.Rental.RentalType.ByHour)
+            {
+                // Kiểm tra và đảm bảo giá trị Hours có sẵn
+                if (!Rental.Hours.HasValue || Rental.Hours.Value <= 0)
+                {
+                    if (Rental.StartTime.HasValue && Rental.EndTime.HasValue)
+                    {
+                        int calculatedHours = (int)Math.Ceiling((Rental.EndTime.Value - Rental.StartTime.Value).TotalHours);
+                        if (calculatedHours < 1) calculatedHours = 1;
+                        Rental.Hours = calculatedHours;
+
+                        // Cập nhật lại repository
+                        await _rentalRepository.UpdateAsync(Rental);
+                    }
+                }
+            }
+
 
             // Lấy thông tin xe và kiểm tra người dùng có phải chủ xe không
             Car = await _carRepository.GetByIdAsync(Rental.CarId);

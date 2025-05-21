@@ -81,6 +81,42 @@
                                 </div>
                                 <span asp-validation-for="Car.DetailedAddress" class="text-danger"></span>
                             </div>
+
+                            <!-- Thêm sau phần nhập địa chỉ chi tiết -->
+                            <div class="mb-3">
+                                <button type="button" id="searchAddress" class="btn btn-outline-secondary">
+                                    <i class="bi bi-search me-2"></i>Tìm địa chỉ trên bản đồ
+                                </button>
+                                <button type="button" id="getCurrentLocation" class="btn btn-outline-primary ms-2">
+                                    <i class="bi bi-geo-alt me-2"></i>Dùng vị trí hiện tại
+                                </button>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label">Chọn vị trí trên bản đồ</label>
+                                <div id="map" style="height: 300px;" class="rounded border"></div>
+                                <div class="form-text mt-2">
+                                    <i class="bi bi-info-circle me-1"></i> Nhấp vào bản đồ để chọn vị trí chính xác của xe
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label asp-for="Car.Latitude" class="form-label">Vĩ độ (Latitude)</label>
+                                    <div class="input-group">
+                                        <input asp-for="Car.Latitude" id="latitude" class="form-control" readonly />
+                                        <span class="input-group-text"><i class="bi bi-geo-alt"></i></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label asp-for="Car.Longitude" class="form-label">Kinh độ (Longitude)</label>
+                                    <div class="input-group">
+                                        <input asp-for="Car.Longitude" id="longitude" class="form-control" readonly />
+                                        <span class="input-group-text"><i class="bi bi-geo-alt"></i></span>
+                                    </div>
+                                </div>
+                            </div>
+
                         </div>
 
 
@@ -251,6 +287,12 @@
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <!-- Thêm JS cho select2 -->
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <!-- CSS Leaflet -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <!-- JavaScript Leaflet -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
     <script>
         $(document).ready(function() {
             // Khởi tạo select2 cho phần chọn tính năng
@@ -366,6 +408,113 @@
                 $('#selectedModel3DPreview').addClass('d-none');
             });
         });
+
+                // Khởi tạo bản đồ
+        var map = L.map('map').setView([10.7623, 106.6827], 13); // Tọa độ mặc định TP.HCM
+        var marker; // Biến lưu marker
+
+        // Thêm layer OpenStreetMap
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // Xử lý sự kiện click trên bản đồ
+        map.on('click', function(e) {
+            var lat = e.latlng.lat;
+            var lng = e.latlng.lng;
+
+            // Cập nhật giá trị vào input
+            document.getElementById('latitude').value = lat.toFixed(6);
+            document.getElementById('longitude').value = lng.toFixed(6);
+
+            // Thêm hoặc di chuyển marker
+            if (marker) {
+                marker.setLatLng(e.latlng);
+            } else {
+                marker = L.marker(e.latlng).addTo(map);
+            }
+        });
+
+        // Xử lý nút lấy vị trí hiện tại
+        document.getElementById('getCurrentLocation').addEventListener('click', function() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    // Success
+                    function(position) {
+                        var lat = position.coords.latitude;
+                        var lng = position.coords.longitude;
+
+                        // Cập nhật giá trị vào input
+                        document.getElementById('latitude').value = lat.toFixed(6);
+                        document.getElementById('longitude').value = lng.toFixed(6);
+
+                        // Cập nhật bản đồ
+                        map.setView([lat, lng], 16);
+
+                        // Thêm hoặc di chuyển marker
+                        if (marker) {
+                            marker.setLatLng([lat, lng]);
+                        } else {
+                            marker = L.marker([lat, lng]).addTo(map);
+                        }
+                    },
+                    // Error
+                    function(error) {
+                        alert("Không thể lấy vị trí: " + error.message);
+                    }
+                );
+            } else {
+                alert("Trình duyệt của bạn không hỗ trợ định vị.");
+            }
+        });
+
+        // Xử lý nút tìm kiếm địa chỉ
+        document.getElementById('searchAddress').addEventListener('click', function() {
+            var province = document.querySelector("select[name='Car.ProvinceId'] option:checked").text;
+            var address = document.getElementById('Car_DetailedAddress').value;
+
+            // Chỉ tìm kiếm nếu có địa chỉ
+            if (address && province && province !== "-- Chọn Tỉnh/Thành phố --") {
+                var searchQuery = address + ', ' + province + ', Vietnam';
+
+                // Hiển thị trạng thái đang tìm kiếm
+                alert("Đang tìm kiếm địa chỉ: " + searchQuery);
+
+                // Sử dụng Nominatim API (OpenStreetMap) để tìm địa chỉ
+                fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(searchQuery)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data && data.length > 0) {
+                            var lat = parseFloat(data[0].lat);
+                            var lng = parseFloat(data[0].lon);
+
+                            // Cập nhật giá trị vào input
+                            document.getElementById('latitude').value = lat.toFixed(6);
+                            document.getElementById('longitude').value = lng.toFixed(6);
+
+                            // Cập nhật bản đồ
+                            map.setView([lat, lng], 16);
+
+                            // Thêm hoặc di chuyển marker
+                            if (marker) {
+                                marker.setLatLng([lat, lng]);
+                            } else {
+                                marker = L.marker([lat, lng]).addTo(map);
+                            }
+                        } else {
+                            alert("Không tìm thấy địa chỉ. Vui lòng thử lại với địa chỉ chi tiết hơn.");
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Lỗi khi tìm kiếm địa chỉ:", error);
+                        alert("Có lỗi xảy ra khi tìm kiếm địa chỉ. Vui lòng thử lại sau.");
+                    });
+            } else {
+                alert("Vui lòng nhập địa chỉ chi tiết và chọn tỉnh/thành phố trước khi tìm kiếm.");
+            }
+        });
+
 
     </script>
 

@@ -78,5 +78,8 @@ namespace GotoCarRental.Repository
         Task AddCarModel3DAsync(int carId, int model3DTemplateId);
         // Phương thức lấy tất cả template 3D theo hãng và loại xe
         Task<IEnumerable<Model3DTemplate>> GetModel3DTemplatesAsync(int? brandId, int? categoryId);
+
+        Task<IEnumerable<Car>> GetNearbyCarsByLocationAsync(double latitude, double longitude, double maxDistance, int pageNumber = 1, int pageSize = 20);
+
     }
 }

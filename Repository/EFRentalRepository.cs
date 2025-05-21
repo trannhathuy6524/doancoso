@@ -51,10 +51,46 @@ namespace GotoCarRental.Repository
 
         public async Task<Rental> AddAsync(Rental rental)
         {
+            // Đảm bảo giá trị Hours được bảo toàn nếu đơn thuê theo giờ
+            if (rental.Type == Rental.RentalType.ByHour)
+            {
+                // Tính toán lại Hours để đảm bảo giá trị chính xác
+                if (rental.StartTime.HasValue && rental.EndTime.HasValue)
+                {
+                    var hours = (int)Math.Ceiling((rental.EndTime.Value - rental.StartTime.Value).TotalHours);
+                    if (hours < 1) hours = 1;
+
+                    // Đảm bảo Hours là giá trị đã tính
+                    rental.Hours = hours;
+
+                    // Cập nhật lại giá tiền dựa trên số giờ đã tính lại
+                    // Lấy thông tin xe để có giá thuê theo giờ
+                    if (rental.Car != null)
+                    {
+                        rental.TotalPrice = rental.Car.PricePerHour * hours;
+                        Console.WriteLine($"Updated TotalPrice: {rental.TotalPrice} based on {hours} hours at {rental.Car.PricePerHour}/hour");
+                    }
+                    else
+                    {
+                        // Nếu Car chưa được include, cần fetch từ database
+                        var car = await _context.Cars.FindAsync(rental.CarId);
+                        if (car != null)
+                        {
+                            rental.TotalPrice = car.PricePerHour * hours;
+                            Console.WriteLine($"Updated TotalPrice: {rental.TotalPrice} based on {hours} hours at {car.PricePerHour}/hour");
+                        }
+                    }
+
+                    // Log để debug
+                    Console.WriteLine($"EFRentalRepository.AddAsync: Type=ByHour, StartTime={rental.StartTime}, EndTime={rental.EndTime}, Hours={rental.Hours}, TotalPrice={rental.TotalPrice}");
+                }
+            }
+
             await _context.Rentals.AddAsync(rental);
             await _context.SaveChangesAsync();
             return rental;
         }
+
 
         public async Task UpdateAsync(Rental rental)
         {
@@ -102,8 +138,8 @@ namespace GotoCarRental.Repository
 
             rental.Status = 2; // Cancelled
                                // Cập nhật PaymentStatus thành "Cancelled" khi hủy đơn
-            if (rental.PaymentStatus == "Pending")
-                rental.PaymentStatus = "Cancelled";
+                               // Luôn cập nhật PaymentStatus thành "Cancelled" khi hủy đơn
+            rental.PaymentStatus = "Cancelled";
 
             rental.UpdatedAt = DateTime.UtcNow;
             await _context.SaveChangesAsync();

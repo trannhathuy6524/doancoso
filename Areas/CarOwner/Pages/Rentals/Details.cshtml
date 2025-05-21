@@ -38,19 +38,25 @@
                     _ => "Không xác định"
                 };
 
-                string paymentStatusClass = Model.Rental.PaymentStatus switch
-                {
-                    "Paid" => "success",
-                    "Pending" => "info",
-                    _ => "warning"
-                };
+                string paymentStatusClass = Model.Rental.Status == 2
+                    ? "danger" // Nếu đơn đã hủy, luôn là "danger"
+                    : Model.Rental.PaymentStatus switch
+                    {
+                        "Paid" => "success",
+                        "Pending" => "info",
+                        "Cancelled" => "danger",
+                        _ => "warning"
+                    };
 
-                string paymentStatusText = Model.Rental.PaymentStatus switch
-                {
-                    "Paid" => "Đã thanh toán",
-                    "Pending" => "Chờ xác nhận thanh toán",
-                    _ => "Chờ thanh toán"
-                };
+                string paymentStatusText = Model.Rental.Status == 2
+                    ? "Đã hủy" // Nếu đơn đã hủy, luôn là "Đã hủy"
+                    : Model.Rental.PaymentStatus switch
+                    {
+                        "Paid" => "Đã thanh toán",
+                        "Pending" => "Chờ xác nhận thanh toán",
+                        "Cancelled" => "Đã hủy",
+                        _ => "Chờ thanh toán"
+                    };
             }
             <span class="badge bg-@statusClass fs-6 mb-2">@statusText</span>
             <span class="badge bg-@paymentStatusClass fs-6 d-block">@paymentStatusText</span>
@@ -118,31 +124,7 @@
                 </div>
             </div>
 
-            <!-- Tóm tắt đơn hàng -->
-            <div class="card shadow-sm mb-4">
-                <div class="card-header bg-light">
-                    <h5 class="mb-0">Tóm tắt thanh toán</h5>
-                </div>
-                <div class="card-body">
-                    <div class="d-flex justify-content-between mb-3">
-                        <span>Giá thuê:</span>
-                        <span>@Model.Car.PricePerDay.ToString("N0") VNĐ/ngày</span>
-                    </div>
-                    <div class="d-flex justify-content-between mb-3">
-                        <span>Thời gian thuê:</span>
-                        <span>@Model.RentalDays ngày</span>
-                    </div>
-                    <hr>
-                    <div class="d-flex justify-content-between mb-3">
-                        <span class="fw-bold">Tổng tiền:</span>
-                        <span class="fw-bold fs-5 text-primary">@Model.Rental.TotalPrice.ToString("N0") VNĐ</span>
-                    </div>
-                    <div class="d-flex justify-content-between">
-                        <span>Trạng thái thanh toán:</span>
-                        <span class="badge bg-@paymentStatusClass">@paymentStatusText</span>
-                    </div>
-                </div>
-            </div>
+            
 
             <!-- Thao tác -->
             <div class="card shadow-sm">
@@ -258,27 +240,60 @@
                     <h5 class="mb-0">Thông tin thuê</h5>
                 </div>
                 <div class="card-body">
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <h6>Ngày bắt đầu</h6>
-                            <p class="mb-0">@Model.Rental.StartDate.ToString("dd/MM/yyyy")</p>
+                    @if (Model.Rental.Type == GotoCarRental.Models.Rental.RentalType.ByHour)
+                    {
+                        <!-- Hiển thị thông tin thuê theo giờ -->
+                        <div class="mb-3">
+                            <div class="alert alert-info mb-3">
+                                <strong><i class="bi bi-clock me-2"></i>Thuê theo giờ</strong>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <h6>Ngày thuê</h6>
+                                    <p class="mb-0">@Model.Rental.StartDate.ToString("dd/MM/yyyy")</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>Thời gian</h6>
+                                    <p class="mb-0">@Model.Rental.StartTime?.ToString(@"hh\:mm") - @Model.Rental.EndTime?.ToString(@"hh\:mm")</p>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <h6>Số giờ thuê</h6>
+                                    <p class="mb-0">@Model.Rental.Hours giờ</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>Giá thuê/giờ</h6>
+                                    <p class="mb-0">@Model.Car.PricePerHour.ToString("N0") VNĐ</p>
+                                </div>
+                            </div>
                         </div>
-                        <div class="col-md-6">
-                            <h6>Ngày kết thúc</h6>
-                            <p class="mb-0">@Model.Rental.EndDate.ToString("dd/MM/yyyy")</p>
+                    }
+                    else
+                    {
+                        <!-- Hiển thị thông tin thuê theo ngày (mã hiện tại) -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <h6>Ngày bắt đầu</h6>
+                                <p class="mb-0">@Model.Rental.StartDate.ToString("dd/MM/yyyy")</p>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Ngày kết thúc</h6>
+                                <p class="mb-0">@Model.Rental.EndDate.ToString("dd/MM/yyyy")</p>
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <h6>Số ngày thuê</h6>
-                            <p class="mb-0">@Model.RentalDays ngày</p>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <h6>Số ngày thuê</h6>
+                                <p class="mb-0">@Model.RentalDays ngày</p>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Giá thuê/ngày</h6>
+                                <p class="mb-0">@Model.Car.PricePerDay.ToString("N0") VNĐ</p>
+                            </div>
                         </div>
-                        <div class="col-md-6">
-                            <h6>Phương thức thanh toán</h6>
-                            <p class="mb-0">@(string.IsNullOrEmpty(Model.Rental.PaymentMethod) ? "Chưa có thông tin" : Model.Rental.PaymentMethod)</p>
-                        </div>
-                    </div>
+                    }
 
                     <div class="row">
                         <div class="col-md-6">
@@ -286,14 +301,15 @@
                             <p class="mb-0">@Model.Rental.CreatedAt.ToString("dd/MM/yyyy HH:mm")</p>
                         </div>
                         <div class="col-md-6">
-                            <h6>Cập nhật gần nhất</h6>
-                            <p class="mb-0">@Model.Rental.UpdatedAt.ToString("dd/MM/yyyy HH:mm")</p>
+                            <h6>Phương thức thanh toán</h6>
+                            <p class="mb-0">@(string.IsNullOrEmpty(Model.Rental.PaymentMethod) ? "Chưa có thông tin" : Model.Rental.PaymentMethod)</p>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Thanh toán -->
+
+            <!-- Lịch sử thanh toán -->
             @if (Model.Payments != null && Model.Payments.Any())
             {
                 <div class="card shadow-sm mb-4">
@@ -319,7 +335,6 @@
                                         <td>@payment.Amount.ToString("N0") VNĐ</td>
                                         <td>@payment.Method</td>
                                         <td>@payment.PaymentDate.ToString("dd/MM/yyyy HH:mm")</td>
-                                        <!-- Trong phần hiển thị lịch sử thanh toán -->
                                         <td>
                                             @switch (payment.Status)
                                             {
@@ -334,7 +349,6 @@
                                                     break;
                                             }
                                         </td>
-
                                     </tr>
                                 }
                             </tbody>
@@ -342,6 +356,7 @@
                     </div>
                 </div>
             }
+
 
             @if (Model.Payments != null && Model.Payments.Any())
             {
