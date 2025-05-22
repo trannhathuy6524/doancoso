@@ -323,6 +323,7 @@ namespace GotoCarRental.Repository
 
         public async Task<bool> IsCarAvailableByHourAsync(int carId, DateTime startDateTime, DateTime endDateTime)
         {
+
             // Kiểm tra xem xe có tồn tại và khả dụng không
             var car = await _context.Cars.FindAsync(carId);
             if (car == null || !car.IsAvailable || !car.IsApproved)

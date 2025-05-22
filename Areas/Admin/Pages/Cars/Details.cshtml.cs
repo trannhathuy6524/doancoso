@@ -57,6 +57,7 @@ namespace GotoCarRental.Areas.Admin.Pages.Cars
 
             return RedirectToPage("./Details", new { id });
         }
+        
 
         public async Task<IActionResult> OnPostDeleteAsync(int id)
         {

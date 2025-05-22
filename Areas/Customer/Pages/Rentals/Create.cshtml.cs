@@ -1,5 +1,6 @@
 ﻿using GotoCarRental.Models;
 using GotoCarRental.Repository;
+using GotoCarRental.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -14,11 +15,17 @@ namespace GotoCarRental.Areas.Customer.Pages.Rentals
     {
         private readonly ICarRepository _carRepository;
         private readonly IRentalRepository _rentalRepository;
+        private readonly IGeoLocationService _geoLocationService;
 
-        public CreateModel(ICarRepository carRepository, IRentalRepository rentalRepository)
+
+        public CreateModel(
+            ICarRepository carRepository,
+            IRentalRepository rentalRepository,
+            IGeoLocationService geoLocationService)
         {
             _carRepository = carRepository;
             _rentalRepository = rentalRepository;
+            _geoLocationService = geoLocationService;
         }
 
         public Car Car { get; set; }
@@ -59,6 +66,8 @@ namespace GotoCarRental.Areas.Customer.Pages.Rentals
 
         [BindProperty]
         public int Hours { get; set; } = 1;
+
+
 
         public async Task<IActionResult> OnGetAsync(int? id, string startDate = null, string endDate = null)
         {
@@ -160,6 +169,7 @@ namespace GotoCarRental.Areas.Customer.Pages.Rentals
                 rental.Hours = Hours;
                 rental.TotalPrice = Car.PricePerHour * Hours;
             }
+
 
             try
             {

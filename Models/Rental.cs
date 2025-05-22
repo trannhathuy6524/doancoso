@@ -51,5 +51,12 @@ namespace GotoCarRental.Models
         public TimeSpan? EndTime { get; set; }
         public int? Hours { get; set; } // Số giờ thuê khi thuê theo giờ
 
+        public bool IsDeliveryRequested { get; set; } = false; // Người thuê có yêu cầu giao xe không
+        public string? DeliveryAddress { get; set; } // Địa chỉ giao xe
+        public double? DeliveryLatitude { get; set; } // Vĩ độ điểm giao xe
+        public double? DeliveryLongitude { get; set; } // Kinh độ điểm giao xe
+        public decimal DeliveryFee { get; set; } = 0; // Phí giao xe
+
+
     }
 }
