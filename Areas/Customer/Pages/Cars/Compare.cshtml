@@ -1,0 +1,160 @@
+﻿@page
+@model GotoCarRental.Areas.Customer.Pages.Cars.CompareModel
+@{
+    ViewData["Title"] = "So sánh xe";
+}
+
+<div class="container py-4">
+    <h1 class="mb-4">So sánh xe</h1>
+
+    @if (!Model.ComparisonViewModel.Cars.Any())
+    {
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle-fill me-2"></i>
+            Không có xe nào được chọn để so sánh.
+        </div>
+        <div class="text-center">
+            <a asp-area="Customer" asp-page="/Cars/Index" class="btn btn-primary">
+                <i class="bi bi-search"></i> Tìm xe để so sánh
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="card shadow-sm mb-4">
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped comparison-table mb-0">
+                    <thead>
+                        <tr class="bg-light">
+                            <th style="min-width: 180px;">Thông số</th>
+                            @foreach (var car in Model.ComparisonViewModel.Cars)
+                            {
+                                <th class="text-center" style="min-width: 250px;">
+                                    <div class="mb-2">
+                                        @if (car.CarImages != null && car.CarImages.Any())
+                                        {
+                                            var mainImage = car.CarImages.FirstOrDefault(ci => ci.IsMainImage) ?? car.CarImages.First();
+                                            <img src="/@(mainImage.ImageUrl.TrimStart('/'))" class="img-fluid rounded" style="max-height: 120px;" alt="@car.Name">
+                                        }
+                                        else
+                                        {
+                                            <img src="/images/car-placeholder.png" class="img-fluid rounded" style="max-height: 120px;" alt="@car.Name">
+                                        }
+                                    </div>
+                                    <a asp-area="Customer" asp-page="/Cars/Details" asp-route-id="@car.Id" class="fw-bold text-primary">@car.Name</a>
+                                </th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="fw-bold">Hãng xe</td>
+                            @foreach (var car in Model.ComparisonViewModel.Cars)
+                            {
+                                <td>@car.Brand?.Name</td>
+                            }
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">Loại xe</td>
+                            @foreach (var car in Model.ComparisonViewModel.Cars)
+                            {
+                                <td>@car.Category?.Name</td>
+                            }
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">Giá thuê/ngày</td>
+                            @foreach (var car in Model.ComparisonViewModel.Cars)
+                            {
+                                <td class="text-primary fw-bold">@car.PricePerDay.ToString("N0") VNĐ</td>
+                            }
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">Giá thuê/giờ</td>
+                            @foreach (var car in Model.ComparisonViewModel.Cars)
+                            {
+                                <td>@car.PricePerHour.ToString("N0") VNĐ</td>
+                            }
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">Khu vực</td>
+                            @foreach (var car in Model.ComparisonViewModel.Cars)
+                            {
+                                <td>@car.Province?.Name</td>
+                            }
+                        </tr>
+
+                        <!-- Tính năng xe -->
+                        <tr>
+                            <td class="fw-bold bg-light" colspan="@(Model.ComparisonViewModel.Cars.Count() + 1)">
+                                <i class="bi bi-tools me-2"></i>Tính năng xe
+                            </td>
+                        </tr>
+
+                        @foreach (var feature in Model.ComparisonViewModel.AllFeatures)
+                        {
+                            <tr>
+                                <td class="fw-bold">@feature.Name</td>
+                                @foreach (var car in Model.ComparisonViewModel.Cars)
+                                {
+                                    <td class="text-center">
+                                        @if (Model.ComparisonViewModel.HasFeature(car.Id, feature.Id))
+                                        {
+                                            <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                                        }
+                                        else
+                                        {
+                                            <i class="bi bi-x-circle-fill text-danger fs-5"></i>
+                                        }
+                                    </td>
+                                }
+                            </tr>
+                        }
+
+                        <!-- Thao tác -->
+                        <tr>
+                            <td class="fw-bold bg-light" colspan="@(Model.ComparisonViewModel.Cars.Count() + 1)">
+                                <i class="bi bi-gear-fill me-2"></i>Thao tác
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">Đặt xe</td>
+                            @foreach (var car in Model.ComparisonViewModel.Cars)
+                            {
+                                <td class="text-center">
+                                    <a asp-area="Customer" asp-page="/Rentals/Create" asp-route-id="@car.Id" class="btn btn-primary">
+                                        <i class="bi bi-cart-plus me-2"></i>Đặt ngay
+                                    </a>
+                                </td>
+                            }
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">Xem chi tiết</td>
+                            @foreach (var car in Model.ComparisonViewModel.Cars)
+                            {
+                                <td class="text-center">
+                                    <a asp-area="Customer" asp-page="/Cars/Details" asp-route-id="@car.Id" class="btn btn-outline-secondary">
+                                        <i class="bi bi-info-circle me-2"></i>Chi tiết
+                                    </a>
+                                </td>
+                            }
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="text-center mb-4">
+            <a asp-area="Customer" asp-page="/Cars/Index" class="btn btn-primary">
+                <i class="bi bi-search"></i> Tìm thêm xe để so sánh
+            </a>
+        </div>
+    }
+</div>
+
+@section Styles {
+    <style>
+        .comparison-table th, .comparison-table td {
+            vertical-align: middle;
+        }
+    </style>
+}
