@@ -1,0 +1,615 @@
+﻿@page "{id:int?}"
+@model GotoCarRental.Areas.Customer.Pages.Rentals.CreateModel
+@{
+    ViewData["Title"] = "Thuê xe";
+}
+
+<div class="container py-5">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-area="Customer" asp-page="/Index">Trang chủ</a></li>
+            <li class="breadcrumb-item"><a asp-area="Customer" asp-page="/Cars/Details" asp-route-id="@Model.Car.Id">@Model.Car.Name</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Thuê xe</li>
+        </ol>
+    </nav>
+
+    <h1 class="mb-4">
+        <i class="bi bi-car-front me-2 text-primary"></i>
+        Đặt thuê xe
+    </h1>
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            @if (Model.Car.CarImages != null && Model.Car.CarImages.Any())
+                            {
+                                var mainImage = Model.Car.CarImages.FirstOrDefault(ci => ci.IsMainImage) ?? Model.Car.CarImages.First();
+                                <img src="/@(mainImage.ImageUrl.TrimStart('/'))" class="img-fluid rounded" alt="@Model.Car.Name">
+                            }
+                            else
+                            {
+                                <img src="/images/car-placeholder.png" class="img-fluid rounded" alt="@Model.Car.Name">
+                            }
+                        </div>
+                        <div class="col-md-8">
+                            <h3>@Model.Car.Name</h3>
+                            <p class="text-muted mb-1">
+                                <i class="bi bi-tag me-1"></i> @Model.Car.Brand?.Name
+                                <span class="mx-2">|</span>
+                                <i class="bi bi-car-front me-1"></i> @Model.Car.Category?.Name
+                            </p>
+                            <div class="d-flex align-items-center mt-3">
+                                <span class="badge bg-primary me-2">@Model.Car.PricePerDay.ToString("N0") VNĐ/ngày</span>
+                                <span class="badge bg-info">@Model.Car.PricePerHour.ToString("N0") VNĐ/giờ</span>
+                            </div>
+                            
+                            <hr>
+                            
+                            <h6>Mô tả:</h6>
+                            <p>@Model.Car.Description</p>
+                            
+                            @if (Model.Car.CarFeatures != null && Model.Car.CarFeatures.Any(cf => cf.Feature != null))
+                            {
+                                <h6>Tính năng:</h6>
+                                <div class="row">
+                                    @foreach (var carFeature in Model.Car.CarFeatures.Where(cf => cf.Feature != null))
+                                    {
+                                        <div class="col-md-6 mb-1">
+                                            <i class="bi bi-check-circle-fill text-success me-2"></i>@carFeature.Feature.Name
+                                        </div>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-calendar-check me-2"></i>Lịch thuê xe</h5>
+                </div>
+                <div class="card-body">
+                    <div id="calendar" class="mb-4"></div>
+                    
+                    <div class="d-flex align-items-center justify-content-center">
+                        <div class="d-flex align-items-center me-4">
+                            <i class="bi bi-circle-fill text-danger me-2"></i> 
+                            <span>Ngày đã có người thuê</span>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-circle-fill text-primary me-2"></i>
+                            <span>Ngày bạn chọn</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-header bg-light d-flex align-items-center">
+                    <i class="bi bi-info-circle me-2"></i>
+                    <h5 class="mb-0">Điều khoản thuê xe</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="mb-0">
+                        <li class="mb-2">Bạn cần thanh toán đầy đủ số tiền thuê xe trước khi nhận xe.</li>
+                        <li class="mb-2">Vui lòng mang theo CCCD/CMND và giấy phép lái xe khi đến nhận xe.</li>
+                        <li class="mb-2">Nếu hủy đơn sau khi đã xác nhận, bạn có thể phải chịu phí hủy đơn.</li>
+                        <li class="mb-2">Xe sẽ được kiểm tra kỹ thuật trước khi giao cho bạn.</li>
+                        <li>Nếu có bất kỳ vấn đề gì, vui lòng liên hệ với chúng tôi qua hotline: 1900 1234.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow mb-4 sticky-top rental-form-container" style="top: 20px;">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-clipboard-check me-2"></i>Thông tin đặt xe</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" id="rentalForm" asp-route-id="@Model.Car.Id">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        
+                        <!-- Steps -->
+                        <div class="rental-steps">
+                            <div class="step-number">@(Model.Car.OfferDriverService ? "1" : "2")</div>
+                            <!-- Step 1: Chọn dịch vụ -->
+                            <!-- Dịch vụ tài xế nếu có -->
+                            @if (Model.Car.OfferDriverService)
+                            {
+                                <div class="mb-3">
+                                    <label class="form-label fw-medium">Hình thức dịch vụ</label>
+                                    <div class="d-flex flex-column gap-2">
+                                        <div class="card rental-option-card p-2 cursor-pointer @(Model.Service == GotoCarRental.Models.Rental.ServiceType.SelfDrive ? "border-primary bg-light" : "")" id="selfDriveCard">
+                                            <div class="form-check mb-0">
+                                                <input class="form-check-input" type="radio" name="Service" id="serviceSelfDrive" asp-for="Service" value="SelfDrive" checked="@(Model.Service == GotoCarRental.Models.Rental.ServiceType.SelfDrive ? "checked" : null)">
+                                                <label class="form-check-label d-flex align-items-center w-100" for="serviceSelfDrive">
+                                                    <i class="bi bi-person-walking me-2 text-primary"></i>
+                                                    <span>Tự lái xe</span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="card rental-option-card p-2 cursor-pointer @(Model.Service == GotoCarRental.Models.Rental.ServiceType.WithDriver ? "border-primary bg-light" : "")" id="withDriverCard">
+                                            <div class="form-check mb-0">
+                                                <input class="form-check-input" type="radio" name="Service" id="serviceWithDriver" asp-for="Service" value="WithDriver" checked="@(Model.Service == GotoCarRental.Models.Rental.ServiceType.WithDriver ? "checked" : null)">
+                                                <label class="form-check-label d-flex align-items-center w-100" for="serviceWithDriver">
+                                                    <i class="bi bi-person-badge me-2 text-primary"></i>
+                                                    <span>Có tài xế</span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Tùy chọn dịch vụ tài xế -->
+                                <div id="driverServiceOptions" class="@(Model.Service == GotoCarRental.Models.Rental.ServiceType.WithDriver ? "" : "d-none")">
+                                    <div class="card border-info mb-3">
+                                        <div class="card-header bg-info bg-opacity-10">
+                                            <h6 class="mb-0 fw-medium"><i class="bi bi-signpost-split me-2"></i>Loại hình di chuyển</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="d-flex flex-column gap-2">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="Trip" id="tripLocalTrip" value="LocalTrip" 
+                                                            checked="@(Model.Trip == GotoCarRental.Models.Rental.TripType.LocalTrip ? "checked" : null)">
+                                                    <label class="form-check-label" for="tripLocalTrip">
+                                                        <span class="fw-medium">Nội thành</span>
+                                                        <div class="text-muted small">Di chuyển trong phạm vi thành phố</div>
+                                                    </label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="Trip" id="tripInterCityRoundTrip" value="InterCityRoundTrip"
+                                                            checked="@(Model.Trip == GotoCarRental.Models.Rental.TripType.InterCityRoundTrip ? "checked" : null)">
+                                                    <label class="form-check-label" for="tripInterCityRoundTrip">
+                                                        <span class="fw-medium">Liên tỉnh khứ hồi</span>
+                                                        <div class="text-muted small">Đi và về, tính phí khứ hồi</div>
+                                                    </label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="Trip" id="tripInterCityOneWay" value="InterCityOneWay"
+                                                            checked="@(Model.Trip == GotoCarRental.Models.Rental.TripType.InterCityOneWay ? "checked" : null)">
+                                                    <label class="form-check-label" for="tripInterCityOneWay">
+                                                        <span class="fw-medium">Liên tỉnh một chiều</span>
+                                                        <div class="text-muted small">Đi một chiều, tài xế quay về</div>
+                                                    </label>
+                                                </div>
+                                            </div>
+
+                                            <div id="distanceSection" class="mt-3 @((Model.Trip == GotoCarRental.Models.Rental.TripType.InterCityRoundTrip || Model.Trip == GotoCarRental.Models.Rental.TripType.InterCityOneWay) ? "" : "d-none")">
+                                                <label for="EstimatedDistance" class="form-label">Khoảng cách ước tính (km)</label>
+                                                <div class="input-group">
+                                                    <input type="number" class="form-control" id="estimatedDistance" asp-for="EstimatedDistance" 
+                                                            min="1" step="1" value="@Model.EstimatedDistance" placeholder="Nhập khoảng cách">
+                                                    <span class="input-group-text">km</span>
+                                                </div>
+                                                <div class="form-text">
+                                                    <i class="bi bi-info-circle me-1"></i>
+                                                    Khoảng cách ảnh hưởng đến phí dịch vụ tài xế
+                                                    <span id="oneWayNote" class="@(Model.Trip == GotoCarRental.Models.Rental.TripType.InterCityOneWay ? "" : "d-none")">
+                                                        <br><i class="bi bi-exclamation-triangle me-1"></i>
+                                                        Đối với chuyến đi 1 chiều, tài xế cần quay về nên phí khoảng cách sẽ tính 2 chiều
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                           
+                            <!-- Step 2: Chọn hình thức thuê -->
+                            <!-- Hình thức thuê -->
+                            <div class="mb-3">
+                                
+                                <div class="btn-group w-100" role="group" aria-label="Phương thức thuê">
+                                    <input type="radio" class="btn-check" id="rentalTypeDay" asp-for="RentalType" value="ByDay"
+                                            checked="@(Model.RentalType == GotoCarRental.Models.Rental.RentalType.ByDay ? "checked" : null)" autocomplete="off">
+                                    <label class="btn btn-outline-primary" for="rentalTypeDay">Theo ngày</label>
+
+                                    <input type="radio" class="btn-check" id="rentalTypeHour" asp-for="RentalType" value="ByHour"
+                                            checked="@(Model.RentalType == GotoCarRental.Models.Rental.RentalType.ByHour ? "checked" : null)" autocomplete="off">
+                                    <label class="btn btn-outline-primary" for="rentalTypeHour">Theo giờ</label>
+                                </div>
+                            </div>
+                            <!-- Địa điểm giao/nhận xe -->
+                            <div class="rental-step mb-4 pb-3">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="step-number">@(Model.Car.OfferDriverService ? "3" : "2")</div>
+                                    <h5 class="mb-0 ms-2 fw-medium">Địa điểm giao và trả xe</h5>
+                                </div>
+
+                                <!-- Tùy chọn cho thuê tự lái -->
+                                <div id="selfDriveLocationOptions" class="@(Model.Service == GotoCarRental.Models.Rental.ServiceType.WithDriver ? "d-none" : "")">
+                                    <div class="card border-primary border-opacity-25 mb-3">
+                                        <div class="card-header bg-primary bg-opacity-10">
+                                            <div class="d-flex align-items-center">
+                                                <i class="bi bi-geo-alt-fill me-2 text-primary"></i>
+                                                <h6 class="mb-0 fw-medium">Địa điểm giao nhận xe (tự lái)</h6>
+                                            </div>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="mb-3">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="DeliveryOption" id="ownerLocationOption" value="OwnerLocation" checked>
+                                                    <label class="form-check-label" for="ownerLocationOption">
+                                                        <span class="fw-medium">Nhận xe tại địa điểm chủ xe</span>
+                                                        <div class="text-muted small">@(Model.Car.DetailedAddress ?? "Địa chỉ thuê xe")</div>
+                                                    </label>
+                                                </div>
+                                            </div>
+
+                                            <div class="mb-3">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="DeliveryOption" id="requestDeliveryOption" value="RequestDelivery">
+                                                    <label class="form-check-label" for="requestDeliveryOption">
+                                                        <span class="fw-medium">Yêu cầu giao xe tận nơi</span>
+                                                        <div class="text-muted small">Có thể phát sinh phí giao xe tùy khoảng cách</div>
+                                                    </label>
+                                                </div>
+                                            </div>
+
+                                            <div id="deliveryAddressSection" class="mt-3 d-none">
+                                                <div class="mb-3">
+                                                    <label class="form-label">Địa chỉ giao xe</label>
+                                                    <input type="text" class="form-control" asp-for="DeliveryAddress" placeholder="Nhập địa chỉ giao xe">
+                                                </div>
+
+                                                <div id="deliveryMapContainer" class="mb-3">
+                                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                                        <label class="form-label mb-0">Chọn vị trí trên bản đồ</label>
+                                                        <button type="button" class="btn btn-sm btn-outline-primary" id="deliveryCurrentLocation">
+                                                            <i class="bi bi-geo-alt-fill me-1"></i>Vị trí hiện tại
+                                                        </button>
+                                                    </div>
+                        
+                                                    <div class="input-group mb-2">
+                                                        <input type="text" class="form-control" id="searchDeliveryAddress" placeholder="Tìm địa chỉ...">
+                                                        <button class="btn btn-outline-secondary" type="button" id="searchDeliveryLocation">
+                                                            <i class="bi bi-search"></i>
+                                                        </button>
+                                                    </div>
+                        
+                                                    <div id="deliveryMap" style="height: 250px;" class="rounded border"></div>
+                        
+                                                    <input type="hidden" asp-for="DeliveryLatitude" id="deliveryLatitude">
+                                                    <input type="hidden" asp-for="DeliveryLongitude" id="deliveryLongitude">
+                        
+                                                    <div class="form-text">
+                                                        <i class="bi bi-info-circle me-1"></i>
+                                                        Khoảng cách giao xe có thể ảnh hưởng đến phí giao xe.
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                               <!-- Tùy chọn cho thuê có tài xế -->
+                                <div id="withDriverLocationOptions" class="@(Model.Service == GotoCarRental.Models.Rental.ServiceType.SelfDrive ? "d-none" : "")">
+                                    <div class="card border-success border-opacity-25 mb-3">
+                                        <div class="card-header bg-success bg-opacity-10">
+                                            <div class="d-flex align-items-center">
+                                                <i class="bi bi-pin-map-fill me-2 text-success"></i>
+                                                <h6 class="mb-0 fw-medium">Địa điểm đón và trả khách</h6>
+                                            </div>
+                                        </div>
+                                        <div class="card-body">
+                                            <!-- Phần điểm đón -->
+                                            <div class="mb-4">
+                                                <h6 class="fw-medium mb-3"><i class="bi bi-signpost-2 me-2 text-success"></i>Điểm đón khách</h6>
+                                                <div class="mb-3">
+                                                    <label class="form-label">Địa điểm đón</label>
+                                                    <input type="text" class="form-control" asp-for="PickupAddress" placeholder="Nhập địa điểm đón">
+                                                </div>
+
+                                                <div id="pickupMapContainer" class="mb-3">
+                                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                                        <label class="form-label mb-0">Chọn vị trí đón trên bản đồ</label>
+                                                        <button type="button" class="btn btn-sm btn-outline-success" id="pickupCurrentLocation">
+                                                            <i class="bi bi-geo-alt-fill me-1"></i>Vị trí hiện tại
+                                                        </button>
+                                                    </div>
+                    
+                                                    <div class="input-group mb-2">
+                                                        <input type="text" class="form-control" id="searchPickupAddress" placeholder="Tìm địa chỉ...">
+                                                        <button class="btn btn-outline-secondary" type="button" id="searchPickupLocation">
+                                                            <i class="bi bi-search"></i>
+                                                        </button>
+                                                    </div>
+                    
+                                                    <div id="pickupMap" style="height: 250px;" class="rounded border"></div>
+                    
+                                                    <input type="hidden" asp-for="PickupLatitude" id="pickupLatitude">
+                                                    <input type="hidden" asp-for="PickupLongitude" id="pickupLongitude">
+                                                </div>
+                                            </div>
+            
+                                            <!-- Phần điểm trả - THÊM MỚI -->
+                                            <div class="mb-3">
+                                                <h6 class="fw-medium mb-3"><i class="bi bi-signpost me-2 text-danger"></i>Điểm trả khách</h6>
+                
+                                                <div class="mb-3">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" id="sameLocationCheckbox" checked>
+                                                        <label class="form-check-label" for="sameLocationCheckbox">
+                                                            Điểm trả khách giống với điểm đón
+                                                        </label>
+                                                    </div>
+                                                </div>
+                
+                                                <div id="dropoffLocationSection" class="d-none">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Địa điểm trả khách</label>
+                                                        <input type="text" class="form-control" asp-for="DropoffAddress" placeholder="Nhập địa điểm trả khách">
+                                                    </div>
+
+                                                    <div id="dropoffMapContainer" class="mb-3">
+                                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                                            <label class="form-label mb-0">Chọn vị trí trả khách trên bản đồ</label>
+                                                            <button type="button" class="btn btn-sm btn-outline-danger" id="dropoffCurrentLocation">
+                                                                <i class="bi bi-geo-alt-fill me-1"></i>Vị trí hiện tại
+                                                            </button>
+                                                        </div>
+                        
+                                                        <div class="input-group mb-2">
+                                                            <input type="text" class="form-control" id="searchDropoffAddress" placeholder="Tìm địa chỉ...">
+                                                            <button class="btn btn-outline-secondary" type="button" id="searchDropoffLocation">
+                                                                <i class="bi bi-search"></i>
+                                                            </button>
+                                                        </div>
+                        
+                                                        <div id="dropoffMap" style="height: 250px;" class="rounded border"></div>
+                        
+                                                        <input type="hidden" asp-for="DropoffLatitude" id="dropoffLatitude">
+                                                        <input type="hidden" asp-for="DropoffLongitude" id="dropoffLongitude">
+                                                    </div>
+                                                </div>
+                                            </div>
+            
+                                            <div class="form-text mb-3">
+                                                <i class="bi bi-info-circle me-1"></i>
+                                                Đối với dịch vụ có tài xế, tài xế sẽ đón bạn tại địa điểm đón và trả khách tại điểm trả khi kết thúc.
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Step 3: Chọn thời gian -->
+                            <div class="rental-step mb-4 pb-3">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="step-number">@(Model.Car.OfferDriverService ? "3" : "2")</div>
+                                </div>
+
+                                <!-- Phần thuê theo ngày -->
+                                <!-- Phần thuê theo ngày -->
+                                <div id="dayRentalSection" style="@(Model.RentalType == GotoCarRental.Models.Rental.RentalType.ByHour ? "display:none" : "")">
+                                    <div class="mb-3">
+                                        <label asp-for="StartDate" class="form-label">Ngày bắt đầu</label>
+                                        <input asp-for="StartDate" type="date" class="form-control" min="@DateTime.Today.ToString("yyyy-MM-dd")" required />
+                                    </div>
+                                    <div class="mb-3">
+                                        <label asp-for="EndDate" class="form-label">Ngày kết thúc</label>
+                                        <input asp-for="EndDate" type="date" class="form-control" min="@DateTime.Today.AddDays(1).ToString("yyyy-MM-dd")" required />
+                                    </div>
+                                </div>
+
+                                <!-- Phần thuê theo giờ -->
+                                <div id="hourRentalSection" style="@(Model.RentalType == GotoCarRental.Models.Rental.RentalType.ByDay ? "display:none" : "")">
+                                    <div class="mb-3">
+                                        <label asp-for="RentalDate" class="form-label">Ngày thuê</label>
+                                        <input asp-for="RentalDate" type="date" class="form-control" min="@DateTime.Today.ToString("yyyy-MM-dd")" required />
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <div class="mb-3">
+                                                <label asp-for="StartTime" class="form-label">Giờ bắt đầu</label>
+                                                <input asp-for="StartTime" type="time" class="form-control" required />
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="mb-3">
+                                                <label asp-for="EndTime" class="form-label">Giờ kết thúc</label>
+                                                <input asp-for="EndTime" type="time" class="form-control" required />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Step 4: Phương thức thanh toán -->
+                            <div class="rental-step mb-4">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="step-number">@(Model.Car.OfferDriverService ? "4" : "3")</div>
+                                </div>
+                                
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white"><i class="bi bi-credit-card"></i></span>
+                                    <select asp-for="PaymentMethod" class="form-select">
+                                        <option value="Thanh toán khi nhận xe">Thanh toán khi nhận xe</option>
+                                        <option value="Chuyển khoản ngân hàng">Chuyển khoản ngân hàng</option>
+                                        <option value="Ví điện tử">Ví điện tử</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid mb-4">
+                            <button type="submit" asp-page-handler="Calculate" asp-route-id="@Model.Car.Id" formmethod="post" 
+                                    class="btn btn-outline-primary">
+                                <i class="bi bi-calculator me-2"></i>Tính giá thuê xe
+                            </button>
+                        </div>
+
+                        <!-- Chi tiết giá thuê -->
+                        <div class="price-breakdown mb-4">
+                            <h6 class="fw-bold d-flex align-items-center mb-3">
+                                <i class="bi bi-receipt-cutoff me-2"></i>Chi tiết giá thuê
+                            </h6>
+
+                            @if (Model.RentalType == GotoCarRental.Models.Rental.RentalType.ByDay)
+                            {
+                                <div class="price-item">
+                                    <span>Giá thuê/ngày:</span>
+                                    <span>@Model.Car.PricePerDay.ToString("N0") VNĐ</span>
+                                </div>
+
+                                <div class="price-item">
+                                    <span>Số ngày thuê:</span>
+                                    <span>@Model.Days ngày</span>
+                                </div>
+
+                                <div class="price-item">
+                                    <span>Thành tiền thuê xe:</span>
+                                    <span>@((Model.Car.PricePerDay * Model.Days).ToString("N0")) VNĐ</span>
+                                </div>
+
+                                @if (Model.Service == GotoCarRental.Models.Rental.ServiceType.WithDriver)
+                                {
+                                    <div class="price-item text-primary">
+                                        <span>Phí tài xế:</span>
+                                        <span>@Model.DriverFee.ToString("N0") VNĐ</span>
+                                    </div>
+            
+                                    @if (Model.DistanceFee.HasValue && Model.DistanceFee.Value > 0)
+                                    {
+                                        <div class="price-item text-primary">
+                                            <span>Phí khoảng cách:</span>
+                                            <span>@Model.DistanceFee.Value.ToString("N0") VNĐ</span>
+                                        </div>
+                                    }
+                                }
+                            }
+                            else // RentalType.ByHour
+                            {
+                                <div class="price-item">
+                                    <span>Giá thuê/giờ:</span>
+                                    <span>@(Model.Car.PricePerHour > 0 ? Model.Car.PricePerHour.ToString("N0") : (Model.Car.PricePerDay / 24).ToString("N0")) VNĐ</span>
+                                </div>
+
+                                <div class="price-item">
+                                    <span>Số giờ thuê:</span>
+                                    <span>@Model.Hours giờ</span>
+                                </div>
+
+                                <div class="price-item">
+                                    <span>Thành tiền thuê xe:</span>
+                                    <span>@((Model.Car.PricePerHour > 0 ? Model.Car.PricePerHour * Model.Hours : (Model.Car.PricePerDay / 24) * Model.Hours).ToString("N0")) VNĐ</span>
+                                </div>
+
+                                @if (Model.Service == GotoCarRental.Models.Rental.ServiceType.WithDriver)
+                                {
+                                    <div class="price-item text-primary">
+                                        <span>Phí tài xế:</span>
+                                        <span>@Model.DriverFee.ToString("N0") VNĐ</span>
+                                    </div>
+            
+                                    @if (Model.DistanceFee.HasValue && Model.DistanceFee.Value > 0)
+                                    {
+                                        <div class="price-item text-primary">
+                                            <span>Phí khoảng cách:</span>
+                                            <span>@Model.DistanceFee.Value.ToString("N0") VNĐ</span>
+                                        </div>
+                                    }
+                                }
+                            }
+                            <!-- Thêm vào phần price-breakdown, trước thẻ div.price-item.price-total -->
+                            @if (Model.IsDeliveryRequested && Model.DeliveryFee > 0)
+                            {
+                                <div class="price-item text-primary">
+                                    <span>Phí giao xe:</span>
+                                    <span>@Model.DeliveryFee.ToString("N0") VNĐ</span>
+                                </div>
+                            }
+                            <div class="price-item price-total text-primary">
+                                <span>TỔNG TIỀN:</span>
+                                <span class="fs-5">@Model.TotalPrice.ToString("N0") VNĐ</span>
+                            </div>
+                        </div>
+
+                        <!-- Hiển thị tình trạng khả dụng -->
+                        @if (!Model.IsAvailable)
+                        {
+                            <div class="alert alert-danger d-flex">
+                                <i class="bi bi-exclamation-triangle-fill fs-4 me-3"></i>
+                                <div>
+                                    <div class="fw-bold">Không khả dụng</div>
+                                    <p class="mb-0 small">Xe đã được đặt trong khoảng thời gian bạn chọn. Vui lòng chọn khoảng thời gian khác.</p>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="alert alert-success d-flex">
+                                <i class="bi bi-check-circle-fill fs-4 me-3"></i>
+                                <div>
+                                    <div class="fw-bold">Xe khả dụng</div>
+                                    <p class="mb-0 small">Xe có thể được thuê trong khoảng thời gian bạn chọn.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="agreeTerms" required>
+                                <label class="form-check-label" for="agreeTerms">
+                                    Tôi đã đọc và đồng ý với các điều khoản thuê xe
+                                </label>
+                            </div>
+                            
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary btn-lg" @(Model.IsAvailable ? "" : "disabled")>
+                                    <i class="bi bi-cart-check-fill me-2"></i>Xác nhận đặt xe
+                                </button>
+                                
+                                <a asp-area="Customer" asp-page="/Cars/Details" asp-route-id="@Model.Car.Id" class="btn btn-outline-secondary">
+                                    <i class="bi bi-arrow-left me-2"></i>Quay lại
+                                </a>
+                            </div>
+                        }
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.0/main.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <link rel="stylesheet" href="~/css/rentals/rental-form.css" />
+
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.0/main.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    
+    <!-- Dữ liệu cho các module JS -->
+   <!-- Xác định input hidden cho unavailableDates -->
+
+<input type="hidden" id="unavailableDatesData" 
+       value='@(Model.UnavailableDates != null && Model.UnavailableDates.Any() 
+               ? Html.Raw(Json.Serialize(Model.UnavailableDates.Select(d => d.ToString("yyyy-MM-dd")).ToArray())) 
+               : "[]")' />
+       <input type="hidden" id="driverFeePerDayData" value="@Model.Car.DriverFeePerDay" />
+    <input type="hidden" id="driverFeePerHourData" value="@(Model.Car.DriverFeePerHour > 0 ? Model.Car.DriverFeePerHour : Model.Car.DriverFeePerDay / 24)" />
+    
+    <!-- Thêm tham chiếu đến các file JavaScript theo đúng thứ tự phụ thuộc -->
+    <script src="~/js/rentals/rental-form.js"></script>
+    <script src="~/js/rentals/calendar-handler.js"></script>
+    <script src="~/js/rentals/delivery-location-handler.js"></script>
+    <script src="~/js/rentals/pickup-dropoff-handler.js"></script>
+    <script src="~/js/rentals/service-type-handler.js"></script>
+    <script src="~/js/rentals/rental-type-handler.js"></script>
+    <script src="~/js/rentals/trip-type-handler.js"></script>
+    <script src="~/js/rentals/rental-bundle.js"></script>
+    
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

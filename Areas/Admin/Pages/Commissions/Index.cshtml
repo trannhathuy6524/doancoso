@@ -1,0 +1,158 @@
+﻿@page
+@model GotoCarRental.Areas.Admin.Pages.Commissions.IndexModel
+@{
+    ViewData["Title"] = "Quản lý hoa hồng";
+}
+
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="display-6 fw-bold">Quản lý hoa hồng</h1>
+            <p class="text-muted">Theo dõi và quản lý phí hoa hồng từ các đơn thuê xe</p>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-6 mb-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-subtitle mb-2 text-muted">Tổng phí hoa hồng</h6>
+                            <h2 class="card-title mb-0">@Model.TotalCommission.ToString("N0") VNĐ</h2>
+                        </div>
+                        <div class="bg-success bg-opacity-10 p-3 rounded">
+                            <i class="bi bi-cash-coin fs-2 text-success"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-subtitle mb-2 text-muted">Đơn thuê hoàn thành</h6>
+                            <h2 class="card-title mb-0">@Model.CompletedRentals</h2>
+                        </div>
+                        <div class="bg-primary bg-opacity-10 p-3 rounded">
+                            <i class="bi bi-check-circle fs-2 text-primary"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bảng thống kê hoa hồng -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light py-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Chi tiết phí hoa hồng</h5>
+                <div>
+                    <form method="get" class="d-flex">
+                        <div class="input-group me-2">
+                            <span class="input-group-text"><i class="bi bi-calendar3"></i></span>
+                            <input type="month" name="month" value="@Model.CurrentMonth.ToString("yyyy-MM")" class="form-control" onchange="this.form.submit()" />
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Mã đơn</th>
+                            <th>Ngày hoàn thành</th>
+                            <th>Khách hàng</th>
+                            <th>Chủ xe</th>
+                            <th>Xe</th>
+                            <th>Tổng giá</th>
+                            <th>Tỷ lệ hoa hồng</th>
+                            <th>Phí hoa hồng</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Rentals.Any())
+                        {
+                            foreach (var rental in Model.Rentals)
+                            {
+                                <tr>
+                                    <td>@rental.Id</td>
+                                    <td>@rental.UpdatedAt.ToString("dd/MM/yyyy")</td>
+                                    <td>@rental.User.UserName</td>
+                                    <td>@rental.Car.User.UserName</td>
+                                    <td>@rental.Car.Name</td>
+                                    <td>@rental.TotalPrice.ToString("N0") VNĐ</td>
+                                    <td>@rental.CommissionRate%</td>
+                                    <td>@rental.CommissionAmount.ToString("N0") VNĐ</td>
+                                    
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="9" class="text-center py-4">
+                                    <div class="text-muted">
+                                        <i class="bi bi-search fs-3 mb-3"></i>
+                                        <p>Không tìm thấy dữ liệu phí hoa hồng</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Biểu đồ hoa hồng theo tháng -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light py-3">
+            <h5 class="mb-0">Biểu đồ doanh thu hoa hồng</h5>
+        </div>
+        <div class="card-body">
+            <canvas id="commissionChart" height="300"></canvas>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('commissionChart').getContext('2d');
+
+            const chartData = @Html.Raw(Json.Serialize(Model.ChartData));
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: chartData.labels,
+                    datasets: [{
+                        label: 'Phí hoa hồng (VNĐ)',
+                        data: chartData.data,
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        });
+    </script>
+}

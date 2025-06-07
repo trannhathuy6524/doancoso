@@ -1,0 +1,159 @@
+﻿@page
+@model GotoCarRental.Areas.Admin.Pages.Model3DTemplates.CreateModel
+@{
+    ViewData["Title"] = "Thêm mô hình 3D mới";
+}
+
+<div class="container py-4">
+    <div class="row">
+        <div class="col-md-8">
+            <h1 class="display-6 fw-bold">Thêm mô hình 3D mới</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-area="Admin" asp-page="/Index">Trang chủ</a></li>
+                    <li class="breadcrumb-item"><a asp-page="./Index">Mô hình 3D</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Thêm mới</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        <div asp-validation-summary="All" class="text-danger"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="Model3DTemplate.Name" class="form-label">Tên mô hình</label>
+                            <input asp-for="Model3DTemplate.Name" class="form-control" />
+                            <span asp-validation-for="Model3DTemplate.Name" class="text-danger"></span>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="Model3DTemplate.BrandId" class="form-label">Hãng xe</label>
+                                <select asp-for="Model3DTemplate.BrandId" asp-items="Model.BrandSelectList" class="form-select">
+                                    <option value="">-- Chọn hãng xe --</option>
+                                </select>
+                                <span asp-validation-for="Model3DTemplate.BrandId" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="Model3DTemplate.CategoryId" class="form-label">Loại xe</label>
+                                <select asp-for="Model3DTemplate.CategoryId" asp-items="Model.CategorySelectList" class="form-select">
+                                    <option value="">-- Chọn loại xe --</option>
+                                </select>
+                                <span asp-validation-for="Model3DTemplate.CategoryId" class="text-danger"></span>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="Model3DTemplate.Description" class="form-label">Mô tả</label>
+                            <textarea asp-for="Model3DTemplate.Description" class="form-control" rows="3"></textarea>
+                            <span asp-validation-for="Model3DTemplate.Description" class="text-danger"></span>
+                            <div class="form-text">Mô tả chi tiết về mô hình 3D này.</div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="Model3DFile" class="form-label">File mô hình 3D</label>
+                                <input asp-for="Model3DFile" class="form-control" type="file" accept=".glb,.gltf" />
+                                <div class="form-text">Định dạng hỗ trợ: GLB, GLTF. Kích thước tối đa: 20MB.</div>
+                                <span asp-validation-for="Model3DFile" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="PreviewImage" class="form-label">Hình ảnh xem trước</label>
+                                <input asp-for="PreviewImage" class="form-control" type="file" accept="image/*" />
+                                <div class="form-text">Định dạng hỗ trợ: JPG, PNG. Kích thước tối đa: 5MB.</div>
+                                <span asp-validation-for="PreviewImage" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div id="previewContainer" class="mt-2 d-none">
+                                    <p class="mb-1 fw-semibold">Xem trước hình ảnh:</p>
+                                    <img id="imagePreview" src="#" class="img-thumbnail" style="max-height: 150px;" />
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div id="modelFileInfo" class="mt-2 d-none">
+                                    <p class="mb-1 fw-semibold">Thông tin file mô hình:</p>
+                                    <p id="modelFileDetails" class="text-muted small mb-0"></p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-end mt-4">
+                            <a asp-page="./Index" class="btn btn-outline-secondary me-2">
+                                <i class="bi bi-arrow-left me-1"></i> Quay lại
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save me-1"></i> Lưu
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light py-3">
+                    <h5 class="mb-0">Hướng dẫn</h5>
+                </div>
+                <div class="card-body">
+                    <p>Mô hình 3D sẽ được hiển thị cho người dùng khi xem chi tiết xe và cho chủ xe khi thêm xe mới.</p>
+                    <p class="fw-semibold">Yêu cầu mô hình 3D:</p>
+                    <ul>
+                        <li>Định dạng <strong>GLB</strong> hoặc <strong>GLTF</strong></li>
+                        <li>Kích thước file tối đa <strong>20MB</strong></li>
+                        <li>Tối ưu hóa cho web (giảm đa giác, kích thước texture)</li>
+                        <li>Có ánh sáng môi trường phù hợp</li>
+                    </ul>
+                    <p class="fw-semibold">Yêu cầu hình ảnh xem trước:</p>
+                    <ul>
+                        <li>Định dạng <strong>JPG</strong> hoặc <strong>PNG</strong></li>
+                        <li>Kích thước tối thiểu <strong>800x600</strong> pixels</li>
+                        <li>Hiển thị rõ mô hình 3D từ góc nhìn tốt nhất</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        // Xem trước hình ảnh
+        document.getElementById('PreviewImage').addEventListener('change', function() {
+            var file = this.files[0];
+            if (file) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('imagePreview').src = e.target.result;
+                    document.getElementById('previewContainer').classList.remove('d-none');
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        // Hiển thị thông tin file mô hình 3D
+        document.getElementById('Model3DFile').addEventListener('change', function() {
+            var file = this.files[0];
+            if (file) {
+                var fileSize = (file.size / 1024 / 1024).toFixed(2) + 'MB';
+                var fileType = file.name.split('.').pop().toUpperCase();
+                document.getElementById('modelFileDetails').innerHTML = 
+                    `<i class="bi bi-file-earmark-binary text-primary me-1"></i> ${file.name}<br>` +
+                    `<i class="bi bi-hdd text-muted me-1"></i> Kích thước: ${fileSize}<br>` +
+                    `<i class="bi bi-filetype-${fileType.toLowerCase()} text-muted me-1"></i> Định dạng: ${fileType}`;
+                document.getElementById('modelFileInfo').classList.remove('d-none');
+            }
+        });
+    </script>
+}

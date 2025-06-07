@@ -1,0 +1,271 @@
+﻿@page
+@model GotoCarRental.Areas.CarOwner.Pages.Rentals.IndexModel
+@{
+    ViewData["Title"] = "Đơn thuê xe";
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="mb-1">Quản lý đơn thuê xe</h1>
+            <p class="text-muted">Xem và xử lý các yêu cầu thuê xe</p>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Thống kê</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6 class="mb-1">Tổng số đơn thuê</h6>
+                        <h3 class="mb-0">@Model.TotalRentals</h3>
+                    </div>
+                    <div>
+                        <h6 class="mb-1">Tổng doanh thu</h6>
+                        <h3 class="mb-0 text-success">@Model.TotalEarnings.ToString("N0") VNĐ</h3>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Bộ lọc</h5>
+                </div>
+                <div class="card-body">
+                    <form method="get">
+                        <div class="mb-3">
+                            <label for="CarId" class="form-label">Xe</label>
+                            <select asp-for="CarId" asp-items="Model.CarSelectList" class="form-select" onchange="this.form.submit()">
+                                <option value="">-- Tất cả xe --</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="Status" class="form-label">Trạng thái</label>
+                            <select asp-for="Status" asp-items="Model.StatusSelectList" class="form-select" onchange="this.form.submit()">
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="SortBy" class="form-label">Sắp xếp theo</label>
+                            <select asp-for="SortBy" asp-items="Model.SortSelectList" class="form-select" onchange="this.form.submit()">
+                            </select>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <a asp-page="./Index" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle me-2"></i>Xóa bộ lọc
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-9">
+            @if (!Model.Rentals.Any())
+            {
+                <div class="card shadow-sm">
+                    <div class="card-body text-center py-5">
+                        <i class="bi bi-calendar-x display-1 text-muted mb-3"></i>
+                        <h4>Không có đơn thuê xe nào</h4>
+                        <p class="text-muted">Chưa có ai đặt thuê xe của bạn hoặc không có đơn nào phù hợp với bộ lọc.</p>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="card shadow-sm">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">Danh sách đơn thuê (@Model.Rentals.Count() / @Model.TotalRentals)</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Xe</th>
+                                        <th>Khách hàng</th>
+                                        <th>Thời gian thuê</th>
+                                        <th>Tổng tiền</th>
+                                        <th>Trạng thái</th>
+                                        <th>Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var rental in Model.Rentals)
+                                    {
+                                        <tr>
+                                            <td>#@rental.Id</td>
+                                            <td>
+                                                <a asp-area="CarOwner" asp-page="/Cars/Details" asp-route-id="@rental.CarId">
+                                                    @(Model.CarNames.ContainsKey(rental.CarId) ? Model.CarNames[rental.CarId] : $"Xe #{rental.CarId}")
+                                                </a>
+                                            </td>
+                                            <td>@(rental.User?.FullName ?? rental.User?.UserName)</td>
+                                            <td>
+                                                <div>@rental.StartDate.ToString("dd/MM/yyyy")</div>
+                                                <div>đến @rental.EndDate.ToString("dd/MM/yyyy")</div>
+                                                <small class="text-muted">(@((rental.EndDate - rental.StartDate).Days) ngày)</small>
+                                            </td>
+                                            <td>@rental.TotalPrice.ToString("N0") VNĐ</td>
+                                            <td>
+                                                @{
+                                                    string badgeClass = rental.Status switch
+                                                    {
+                                                        0 => "bg-warning",
+                                                        1 => "bg-primary",
+                                                        2 => "bg-danger",
+                                                        3 => "bg-success",
+                                                        4 => "bg-info",
+                                                        _ => "bg-secondary"
+                                                    };
+
+                                                    string statusText = rental.Status switch
+                                                    {
+                                                        0 => "Chờ xác nhận",
+                                                        1 => "Đã xác nhận",
+                                                        2 => "Đã hủy",
+                                                        3 => "Hoàn thành",
+                                                        4 => "Đang thực hiện",
+                                                        _ => "Không xác định"
+                                                    };
+                                                }
+                                                <span class="badge @badgeClass">@statusText</span>
+                                            </td>
+                                            <td>
+                                                <div class="dropdown">
+                                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                                        <i class="bi bi-three-dots"></i>
+                                                    </button>
+                                                    <ul class="dropdown-menu">
+                                                        <li>
+                                                            <a class="dropdown-item" asp-page="./Details" asp-route-id="@rental.Id">
+                                                                <i class="bi bi-info-circle me-2"></i>Chi tiết
+                                                            </a>
+                                                        </li>
+
+                                                        @if (rental.Status == 0) // Chờ xác nhận
+                                                        {
+                                                            <li>
+                                                                <form method="post" asp-page-handler="Confirm" asp-route-id="@rental.Id" 
+                                                                      onsubmit="return confirm('Bạn có chắc chắn muốn xác nhận đơn thuê này?')">
+                                                                    <button type="submit" class="dropdown-item text-success">
+                                                                        <i class="bi bi-check-circle me-2"></i>Xác nhận
+                                                                    </button>
+                                                                </form>
+                                                            </li>
+                                                            <li>
+                                                                <form method="post" asp-page-handler="Cancel" asp-route-id="@rental.Id"
+                                                                      onsubmit="return confirm('Bạn có chắc chắn muốn từ chối đơn thuê này?')">
+                                                                    <button type="submit" class="dropdown-item text-danger">
+                                                                        <i class="bi bi-x-circle me-2"></i>Từ chối
+                                                                    </button>
+                                                                </form>
+                                                            </li>
+                                                        }
+                                                        
+                                                        @if (rental.Status == 1) // Đã xác nhận
+                                                        {
+                                                            <li>
+                                                                <form method="post" asp-page-handler="Complete" asp-route-id="@rental.Id"
+                                                                      onsubmit="return confirm('Bạn có chắc chắn đánh dấu đơn thuê này là hoàn thành?')">
+                                                                    <button type="submit" class="dropdown-item text-success">
+                                                                        <i class="bi bi-check2-all me-2"></i>Đánh dấu hoàn thành
+                                                                    </button>
+                                                                </form>
+                                                            </li>
+                                                            <li>
+                                                                <form method="post" asp-page-handler="Cancel" asp-route-id="@rental.Id"
+                                                                      onsubmit="return confirm('Bạn có chắc chắn muốn hủy đơn thuê này?')">
+                                                                    <button type="submit" class="dropdown-item text-danger">
+                                                                        <i class="bi bi-x-circle me-2"></i>Hủy đơn
+                                                                    </button>
+                                                                </form>
+                                                            </li>
+                                                        }
+                                                    </ul>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Phân trang -->
+                @if (Model.TotalPages > 1)
+                {
+                    <nav class="mt-4">
+                        <ul class="pagination justify-content-center">
+                            <li class="page-item @(Model.CurrentPage == 1 ? "disabled" : "")">
+                                <a class="page-link" asp-page="./Index"
+                                   asp-route-currentPage="@(Model.CurrentPage - 1)"
+                                   asp-route-status="@Model.Status"
+                                   asp-route-carId="@Model.CarId"
+                                   asp-route-sortBy="@Model.SortBy">
+                                    Trước
+                                </a>
+                            </li>
+
+                            @for (int i = 1; i <= Model.TotalPages; i++)
+                            {
+                                <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                                    <a class="page-link" asp-page="./Index"
+                                       asp-route-currentPage="@i"
+                                       asp-route-status="@Model.Status"
+                                       asp-route-carId="@Model.CarId"
+                                       asp-route-sortBy="@Model.SortBy">
+                                        @i
+                                    </a>
+                                </li>
+                            }
+
+                            <li class="page-item @(Model.CurrentPage == Model.TotalPages ? "disabled" : "")">
+                                <a class="page-link" asp-page="./Index"
+                                   asp-route-currentPage="@(Model.CurrentPage + 1)"
+                                   asp-route-status="@Model.Status"
+                                   asp-route-carId="@Model.CarId"
+                                   asp-route-sortBy="@Model.SortBy">
+                                    Tiếp
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                }
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <script>
+        // Tự động ẩn thông báo sau 5 giây
+        setTimeout(function () {
+            $('.alert').alert('close');
+        }, 5000);
+    </script>
+}

@@ -1,0 +1,229 @@
+﻿@page
+@model GotoCarRental.Areas.Admin.Pages.Cars.CreateModel
+@{
+    ViewData["Title"] = "Thêm xe mới";
+}
+
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1">
+                    <li class="breadcrumb-item"><a asp-area="Admin" asp-page="/Index">Trang chủ Admin</a></li>
+                    <li class="breadcrumb-item"><a asp-area="Admin" asp-page="/Cars/Index">Quản lý xe</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Thêm xe mới</li>
+                </ol>
+            </nav>
+            <h1 class="display-6 fw-bold">Thêm xe mới</h1>
+        </div>
+    </div>
+
+    @if (!ModelState.IsValid)
+    {
+        <div class="alert alert-danger">
+            <ul class="mb-0">
+                @foreach (var state in ViewContext.ModelState)
+                {
+                    @foreach (var error in state.Value.Errors)
+                    {
+                        <li>@error.ErrorMessage</li>
+                    }
+                }
+            </ul>
+        </div>
+    }
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        <!-- Thông tin cơ bản -->
+                        <h5 class="mb-3">Thông tin cơ bản</h5>
+                        
+                        <div class="mb-3">
+                            <label asp-for="SelectedUserId" class="form-label">Chủ xe</label>
+                            <select asp-for="SelectedUserId" asp-items="Model.UserSelectList" class="form-select">
+                                <option value="">-- Chọn chủ xe --</option>
+                            </select>
+                            <span asp-validation-for="SelectedUserId" class="text-danger"></span>
+                            <div class="form-text">Chỉ hiển thị những người dùng có vai trò Chủ xe (CarOwner)</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="Car.Name" class="form-label">Tên xe</label>
+                            <input asp-for="Car.Name" class="form-control" />
+                            <span asp-validation-for="Car.Name" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Car.Description" class="form-label">Mô tả</label>
+                            <textarea asp-for="Car.Description" class="form-control" rows="4"></textarea>
+                            <span asp-validation-for="Car.Description" class="text-danger"></span>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="Car.BrandId" class="form-label">Hãng xe</label>
+                                <select asp-for="Car.BrandId" asp-items="Model.BrandSelectList" class="form-select">
+                                    <option value="">-- Chọn hãng xe --</option>
+                                </select>
+                                <span asp-validation-for="Car.BrandId" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="Car.CategoryId" class="form-label">Loại xe</label>
+                                <select asp-for="Car.CategoryId" asp-items="Model.CategorySelectList" class="form-select">
+                                    <option value="">-- Chọn loại xe --</option>
+                                </select>
+                                <span asp-validation-for="Car.CategoryId" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Car.PricePerDay" class="form-label">Giá thuê mỗi ngày (VNĐ)</label>
+                            <input asp-for="Car.PricePerDay" class="form-control" type="number" min="1" />
+                            <span asp-validation-for="Car.PricePerDay" class="text-danger"></span>
+                        </div>
+
+                        <!-- Trạng thái -->
+                        <h5 class="mb-3 mt-4">Trạng thái</h5>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="form-check form-switch">
+                                    <input asp-for="Car.IsAvailable" class="form-check-input" type="checkbox" checked />
+                                    <label asp-for="Car.IsAvailable" class="form-check-label">Có sẵn để cho thuê</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check form-switch">
+                                    <input asp-for="Car.IsApproved" class="form-check-input" type="checkbox" checked />
+                                    <label asp-for="Car.IsApproved" class="form-check-label">Đã được phê duyệt</label>
+                                    <div class="form-text">Xe được thêm bởi Admin sẽ mặc định được phê duyệt</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Hình ảnh -->
+                        <h5 class="mb-3 mt-4">Hình ảnh</h5>
+                        <div class="mb-4">
+                            <label asp-for="MainImage" class="form-label">Tải lên hình ảnh chính</label>
+                            <input asp-for="MainImage" type="file" class="form-control" accept="image/*" />
+                            <div class="form-text">Định dạng hỗ trợ: JPG, PNG, GIF. Kích thước tối đa: 5MB.</div>
+                        </div>
+                        
+                        <div id="imagePreview" class="mb-3 text-center d-none">
+                            <h6 class="mb-2">Xem trước</h6>
+                            <img id="previewImage" src="#" class="img-fluid img-thumbnail" style="max-height: 200px;" />
+                        </div>
+                        <h5 class="mb-3 mt-4">Tính năng và dịch vụ</h5>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="form-check form-switch">
+                                    <input asp-for="Car.OfferDriverService" class="form-check-input" type="checkbox" />
+                                    <label asp-for="Car.OfferDriverService" class="form-check-label">Cung cấp dịch vụ lái xe</label>
+                                    <div class="form-text">Xe có thể được thuê kèm tài xế</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="driverServiceOptions" style="display:none;">
+                            <div class="card border-primary border-opacity-50 mb-3">
+                                <div class="card-header bg-primary bg-opacity-10">
+                                    <h6 class="mb-0">Cấu hình dịch vụ tài xế</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <label asp-for="Car.DriverFeePerDay" class="form-label">Phí tài xế mỗi ngày (VNĐ)</label>
+                                            <input asp-for="Car.DriverFeePerDay" class="form-control" type="number" min="0" />
+                                            <span asp-validation-for="Car.DriverFeePerDay" class="text-danger"></span>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label asp-for="Car.DriverFeePerHour" class="form-label">Phí tài xế mỗi giờ (VNĐ)</label>
+                                            <input asp-for="Car.DriverFeePerHour" class="form-control" type="number" min="0" />
+                                            <span asp-validation-for="Car.DriverFeePerHour" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Nút submit -->
+                        <div class="d-flex justify-content-end gap-2 mt-4">
+                            <a asp-page="./Index" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle me-2"></i> Hủy
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-plus-circle me-2"></i> Thêm xe mới
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Thông tin bên phải -->
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Hướng dẫn</h5>
+                </div>
+                <div class="card-body">
+                    <p>Khi thêm xe mới trong trang quản trị, hãy lưu ý các điểm sau:</p>
+                    <ul>
+                        <li>Chọn <strong>chủ xe</strong> từ danh sách người dùng có vai trò CarOwner</li>
+                        <li>Xe được thêm bởi Admin sẽ tự động được <strong>phê duyệt</strong></li>
+                        <li>Đảm bảo <strong>nhập đầy đủ</strong> các thông tin bắt buộc</li>
+                        <li>Nên tải lên <strong>ít nhất một ảnh</strong> để người dùng có thể xem</li>
+                    </ul>
+                    <hr>
+                    <div class="alert alert-info mb-0">
+                        <i class="bi bi-info-circle me-2"></i> Sau khi thêm xe, bạn có thể quản lý thêm các hình ảnh và tính năng trong trang chi tiết xe.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <!-- Thêm Bootstrap Icons CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    
+    <partial name="_ValidationScriptsPartial" />
+    
+    <script>
+        // Hiển thị xem trước hình ảnh khi chọn file
+        document.getElementById('MainImage').addEventListener('change', function() {
+            const preview = document.getElementById('imagePreview');
+            const previewImage = document.getElementById('previewImage');
+            
+            if (this.files && this.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImage.src = e.target.result;
+                    preview.classList.remove('d-none');
+                }
+                reader.readAsDataURL(this.files[0]);
+            } else {
+                preview.classList.add('d-none');
+            }
+        });
+            document.getElementById('Car_OfferDriverService').addEventListener('change', function() {
+            const driverServiceOptions = document.getElementById('driverServiceOptions');
+            if (this.checked) {
+                driverServiceOptions.style.display = 'block';
+            } else {
+                driverServiceOptions.style.display = 'none';
+            }
+        });
+
+        // Kiểm tra ban đầu khi tải trang
+        document.addEventListener('DOMContentLoaded', function() {
+            const offerDriverService = document.getElementById('Car_OfferDriverService');
+            const driverServiceOptions = document.getElementById('driverServiceOptions');
+
+            if (offerDriverService && offerDriverService.checked) {
+                driverServiceOptions.style.display = 'block';
+            }
+        });
+    </script>
+}

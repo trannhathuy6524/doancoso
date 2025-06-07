@@ -1,0 +1,571 @@
+﻿@page
+@model GotoCarRental.Areas.CarOwner.Pages.Cars.EditModel
+@{
+    ViewData["Title"] = "Chỉnh sửa xe";
+}
+
+<div class="min-h-screen bg-gray-100">
+    <!-- Header Section -->
+    <div class="bg-white shadow">
+        <div class="container mx-auto px-4 py-6">
+            <nav aria-label="breadcrumb">
+                <ol class="flex space-x-2 text-sm text-gray-600">
+                    <li><a asp-area="CarOwner" asp-page="/Index" class="hover:text-blue-600">Trang chủ</a></li>
+                    <li>/</li>
+                    <li><a asp-area="CarOwner" asp-page="/MyCars" class="hover:text-blue-600">Xe của tôi</a></li>
+                    <li>/</li>
+                    <li><a asp-area="CarOwner" asp-page="/Cars/Details" asp-route-id="@Model.Car.Id" class="hover:text-blue-600">@Model.Car.Name</a></li>
+                    <li>/</li>
+                    <li class="text-gray-800 font-medium">Chỉnh sửa</li>
+                </ol>
+            </nav>
+            <h1 class="text-3xl font-bold text-gray-800 mt-2">Chỉnh sửa thông tin xe</h1>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 py-8">
+        @if (!ModelState.IsValid)
+        {
+            <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded">
+                <ul class="list-disc pl-5">
+                    @foreach (var state in ViewContext.ModelState)
+                    {
+                        @foreach (var error in state.Value.Errors)
+                        {
+                            <li>@error.ErrorMessage</li>
+                        }
+                    }
+                </ul>
+            </div>
+        }
+
+        <div class="flex flex-col lg:flex-row gap-8">
+            <!-- Main Form -->
+            <div class="lg:w-2/3">
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <form method="post" enctype="multipart/form-data">
+                        <input type="hidden" asp-for="Car.Id" />
+                        <input type="hidden" asp-for="Car.UserId" />
+                        <input type="hidden" asp-for="Car.CreatedAt" />
+                        <input type="hidden" asp-for="Car.IsApproved" />
+                        <input type="hidden" asp-for="Car.UpdatedAt" />
+                        <input type="hidden" asp-for="Car.PricePerDay" value="@Model.Car.PricePerDay" />
+
+
+                        <!-- Basic Information -->
+                        <h2 class="text-xl font-semibold text-gray-800 mb-4">Thông tin cơ bản</h2>
+                        <div class="space-y-4">
+                            <div>
+                                <label asp-for="Car.Name" class="block text-sm font-medium text-gray-700">Tên xe</label>
+                                <input asp-for="Car.Name" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500" />
+                                <span asp-validation-for="Car.Name" class="text-red-600 text-sm"></span>
+                            </div>
+
+                            <div>
+                                <label asp-for="Car.Description" class="block text-sm font-medium text-gray-700">Mô tả</label>
+                                <textarea asp-for="Car.Description" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500" rows="4"></textarea>
+                                <span asp-validation-for="Car.Description" class="text-red-600 text-sm"></span>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label asp-for="Car.BrandId" class="block text-sm font-medium text-gray-700">Hãng xe</label>
+                                    <select asp-for="Car.BrandId" asp-items="Model.BrandSelectList" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                                        <option value="">-- Chọn hãng xe --</option>
+                                    </select>
+                                    <span asp-validation-for="Car.BrandId" class="text-red-600 text-sm"></span>
+                                </div>
+                                <div>
+                                    <label asp-for="Car.CategoryId" class="block text-sm font-medium text-gray-700">Loại xe</label>
+                                    <select asp-for="Car.CategoryId" asp-items="Model.CategorySelectList" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                                        <option value="">-- Chọn loại xe --</option>
+                                    </select>
+                                    <span asp-validation-for="Car.CategoryId" class="text-red-600 text-sm"></span>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label asp-for="Car.ProvinceId" class="block text-sm font-medium text-gray-700">Tỉnh/Thành phố</label>
+                                    <div class="mt-1 flex rounded-md shadow-sm">
+                                        <span class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500"><i class="bi bi-geo-alt"></i></span>
+                                        <select asp-for="Car.ProvinceId" asp-items="Model.ProvinceSelectList" class="block w-full rounded-none rounded-r-md border-gray-300 focus:ring-blue-500 focus:border-blue-500">
+                                            <option value="">-- Chọn Tỉnh/Thành phố --</option>
+                                        </select>
+                                    </div>
+                                    <span asp-validation-for="Car.ProvinceId" class="text-red-600 text-sm"></span>
+                                </div>
+                                <div>
+                                    <label asp-for="Car.DetailedAddress" class="block text-sm font-medium text-gray-700">Địa chỉ chi tiết</label>
+                                    <div class="mt-1 flex rounded-md shadow-sm">
+                                        <span class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500"><i class="bi bi-house"></i></span>
+                                        <input asp-for="Car.DetailedAddress" class="block w-full rounded-none rounded-r-md border-gray-300 focus:ring-blue-500 focus:border-blue-500" placeholder="Nhập địa chỉ chi tiết (quận, huyện, phố, số nhà...)">
+                                    </div>
+                                    <span asp-validation-for="Car.DetailedAddress" class="text-red-600 text-sm"></span>
+                                </div>
+                            </div>
+
+                            <div class="flex space-x-2">
+                                <button type="button" id="searchAddress" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <i class="bi bi-search mr-2"></i>Tìm địa chỉ trên bản đồ
+                                </button>
+                                <button type="button" id="getCurrentLocation" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <i class="bi bi-geo-alt mr-2"></i>Dùng vị trí hiện tại
+                                </button>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Chọn vị trí trên bản đồ</label>
+                                <div id="map" class="mt-1 h-80 rounded-md border border-gray-300"></div>
+                                <p class="mt-2 text-sm text-gray-500"><i class="bi bi-info-circle mr-1"></i>Nhấp vào bản đồ để chọn vị trí chính xác của xe</p>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label asp-for="Car.Latitude" class="block text-sm font-medium text-gray-700">Vĩ độ (Latitude)</label>
+                                    <div class="mt-1 flex rounded-md shadow-sm">
+                                        <input asp-for="Car.Latitude" id="latitude" class="block w-full rounded-l-md border-gray-300 focus:ring-blue-500 focus:border-blue-500" readonly />
+                                        <span class="inline-flex items-center px-3 rounded-r-md border border-l-0 border-gray-300 bg-gray-50 text-gray-500"><i class="bi bi-geo-alt"></i></span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label asp-for="Car.Longitude" class="block text-sm font-medium text-gray-700">Kinh độ (Longitude)</label>
+                                    <div class="mt-1 flex rounded-md shadow-sm">
+                                        <input asp-for="Car.Longitude" id="longitude" class="block w-full rounded-l-md border-gray-300 focus:ring-blue-500 focus:border-blue-500" readonly />
+                                        <span class="inline-flex items-center px-3 rounded-r-md border border-l-0 border-gray-300 bg-gray-50 text-gray-500"><i class="bi bi-geo-alt"></i></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        
+
+                        <!-- Features -->
+                        <h2 class="text-xl font-semibold text-gray-800 mt-8 mb-4">Tính năng xe</h2>
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="featuresContainer">
+                                @if (Model.AllFeatures != null)
+                                {
+                                    foreach (var feature in Model.AllFeatures)
+                                    {
+                                        bool isChecked = Model.CarFeatureIds != null && Model.CarFeatureIds.Contains(feature.Id);
+                                        <div class="flex items-center">
+                                            <input class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" type="checkbox" name="SelectedFeatures" value="@feature.Id" id="feature_@feature.Id" @(isChecked ? "checked" : "") />
+                                            <label class="ml-2 text-sm text-gray-700" for="feature_@feature.Id">
+                                                @feature.Name
+                                                @if (!string.IsNullOrEmpty(feature.Description))
+                                                {
+                                                    <i class="bi bi-info-circle text-gray-400 cursor-pointer" data-bs-toggle="tooltip" title="@feature.Description"></i>
+                                                }
+                                            </label>
+                                        </div>
+                                    }
+                                }
+                            </div>
+                            <p class="mt-3 text-sm text-gray-500"><i class="bi bi-info-circle-fill mr-1"></i>Các tính năng giúp khách hàng tìm kiếm xe phù hợp với nhu cầu của họ.</p>
+                        </div>
+
+                        
+
+                        <!-- Images -->
+                        <h2 class="text-xl font-semibold text-gray-800 mt-8 mb-4">Hình ảnh</h2>
+                        <div>
+                            <label for="MainImage" class="block text-sm font-medium text-gray-700">Tải lên hình ảnh mới (sẽ được đặt làm ảnh chính)</label>
+                            <input id="MainImage" name="MainImage" type="file" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" accept="image/*" />
+                            <p class="mt-2 text-sm text-gray-500">Định dạng hỗ trợ: JPG, PNG, GIF. Kích thước tối đa: 5MB.</p>
+                        </div>
+
+                        <div id="imagePreview" class="mt-4 hidden">
+                            <h6 class="text-sm font-medium text-gray-700 mb-2">Xem trước</h6>
+                            <img id="previewImage" src="#" class="max-h-48 rounded-md shadow" />
+                        </div>
+
+                        @if (Model.CarImages != null && Model.CarImages.Any())
+                        {
+                            <div class="mt-4">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Hình ảnh hiện tại</label>
+                                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                                    @foreach (var image in Model.CarImages)
+                                    {
+                                        <div class="relative">
+                                            <img src="/@(image.ImageUrl.TrimStart('/'))" class="h-24 w-full object-cover rounded-md" alt="Car Image">
+                                            @if (image.IsMainImage)
+                                            {
+                                                <span class="absolute top-2 left-2 bg-blue-600 text-white text-xs px-2 py-1 rounded">Ảnh chính</span>
+                                            }
+                                        </div>
+                                    }
+                                </div>
+                                <p class="mt-2 text-sm">
+                                    <a asp-area="CarOwner" asp-page="/Cars/ManageImages" asp-route-id="@Model.Car.Id">Quản lý hình ảnh</a>
+                                </p>
+                            </div>
+                        }
+                        <h5 class="mb-3 mt-4">Tính năng và dịch vụ</h5>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="form-check form-switch">
+                                    <input asp-for="Car.OfferDriverService" class="form-check-input" type="checkbox" />
+                                    <label asp-for="Car.OfferDriverService" class="form-check-label">Cung cấp dịch vụ lái xe</label>
+                                    <div class="form-text">Xe có thể được thuê kèm tài xế</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Thêm phần này sau đó (nếu OfferDriverService được chọn) -->
+                        <div id="driverServiceOptions" style="display:none;">
+                            <div class="card border-primary border-opacity-50 mb-3">
+                                <div class="card-header bg-primary bg-opacity-10">
+                                    <h6 class="mb-0">Cấu hình dịch vụ tài xế</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <label asp-for="Car.DriverFeePerDay" class="form-label">Phí tài xế mỗi ngày (VNĐ)</label>
+                                            <input asp-for="Car.DriverFeePerDay" class="form-control" type="number" min="0" />
+                                            <span asp-validation-for="Car.DriverFeePerDay" class="text-danger"></span>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label asp-for="Car.DriverFeePerHour" class="form-label">Phí tài xế mỗi giờ (VNĐ)</label>
+                                            <input asp-for="Car.DriverFeePerHour" class="form-control" type="number" min="0" />
+                                            <span asp-validation-for="Car.DriverFeePerHour" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Submit Buttons -->
+                        <div class="mt-8 flex justify-end space-x-4">
+                            <a asp-area="CarOwner" asp-page="/Cars/Details" asp-route-id="@Model.Car.Id" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <i class="bi bi-x-circle mr-2"></i>Hủy
+                            </a>
+                            <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <i class="bi bi-check-circle mr-2"></i>Lưu thay đổi
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="lg:w-1/3 space-y-6">
+                <!-- Pricing -->
+                <h2 class="text-xl font-semibold text-gray-800 mt-8 mb-4">Thiết lập giá thuê</h2>
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="col-md-6">
+                            <label asp-for="Car.PricePerDay" class="form-label">Giá thuê mỗi ngày (VNĐ)</label>
+                            <div class="mt-1 flex rounded-md shadow-sm">
+                                <span class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500"><i class="bi bi-calendar-day"></i></span>
+                                <input name="DisplayPricePerDay" value="@Model.Car.PricePerDay" class="block w-full rounded-none rounded-r-md border-gray-300 focus:ring-blue-500 focus:border-blue-500" type="number" min="1" />
+                            </div>
+                            <span asp-validation-for="Car.PricePerDay" class="text-red-600 text-sm"></span>
+                        </div>
+
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <label class="block text-sm font-medium text-gray-700 mr-3">Cho phép thuê theo giờ</label>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input asp-for="EnableHourlyRental" id="enableHourlyRental" class="sr-only peer" type="checkbox" />
+                                    <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-blue-600 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+                                    <span class="ml-3 text-sm font-medium text-gray-700" id="switchLabel">@(Model.EnableHourlyRental ? "Đã bật" : "Đã tắt")</span>
+                                </label>
+                            </div>
+                            <div id="hourlyRentalSection" class="@(Model.EnableHourlyRental ? "" : "hidden")">
+                                <label asp-for="Car.PricePerHour" class="block text-sm font-medium text-gray-700">Giá thuê mỗi giờ (VNĐ)</label>
+                                <div class="mt-1 flex rounded-md shadow-sm">
+                                    <span class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500"><i class="bi bi-clock"></i></span>
+                                    <input asp-for="Car.PricePerHour" id="pricePerHourInput" class="block w-full rounded-none rounded-r-md border-gray-300 focus:ring-blue-500 focus:border-blue-500" type="number" min="1" />
+                                </div>
+                                <span asp-validation-for="Car.PricePerHour" class="text-red-600 text-sm"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-3 bg-blue-50 text-blue-800 p-3 rounded-md text-sm">
+                        <i class="bi bi-info-circle-fill mr-2"></i>
+                        Bạn có thể cung cấp cả hai tùy chọn thuê theo ngày và theo giờ để tăng tính linh hoạt cho khách hàng.
+                    </div>
+                </div>
+                <!-- Status Info -->
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">Thông tin trạng thái</h2>
+                    <!-- Status -->
+                    <h2 class="text-xl font-semibold text-gray-800 mt-8 mb-4">Trạng thái</h2>
+                    <div class="flex items-center">
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input asp-for="Car.IsAvailable" class="sr-only peer" type="checkbox" />
+                            <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-blue-600 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+                            <span class="ml-3 text-sm font-medium text-gray-700">Có sẵn để cho thuê</span>
+                        </label>
+                    </div>
+                    <p class="mt-2 text-sm text-gray-500">
+                        @if (Model.Car.IsAvailable)
+                        {
+                            <span>Xe của bạn sẽ hiển thị cho người dùng thuê.</span>
+                        }
+                        else
+                        {
+                            <span>Xe của bạn sẽ không hiển thị cho người dùng thuê.</span>
+                        }
+                    </p>
+                    <ul class="space-y-3">
+                        <li class="flex justify-between items-center">
+                            <span class="text-sm font-medium text-gray-700">Trạng thái duyệt:</span>
+                            @if (Model.Car.IsApproved)
+                            {
+                                <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded">Đã duyệt</span>
+                            }
+                            else
+                            {
+                                <span class="bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded">Chờ duyệt</span>
+                            }
+                        </li>
+                        <li class="flex justify-between items-center">
+                            <span class="text-sm font-medium text-gray-700">Ngày tạo:</span>
+                            <span class="text-sm text-gray-500">@Model.Car.CreatedAt.ToString("dd/MM/yyyy HH:mm")</span>
+                        </li>
+                        <li class="flex justify-between items-center">
+                            <span class="text-sm font-medium text-gray-700">Ngày cập nhật:</span>
+                            <span class="text-sm text-gray-500">@Model.Car.UpdatedAt.ToString("dd/MM/yyyy HH:mm")</span>
+                        </li>
+                    </ul>
+                    <div class="mt-4 bg-blue-50 text-blue-800 p-3 rounded-md text-sm">
+                        <i class="bi bi-info-circle-fill mr-2"></i>
+                        Sau khi cập nhật thông tin cơ bản của xe, xe sẽ vẫn giữ nguyên trạng thái phê duyệt.
+                    </div>
+                </div>
+                <!-- Thêm mục thiết lập dịch vụ tài xế -->
+                <h5 class="mb-3 mt-4">Thiết lập dịch vụ tài xế</h5>
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="form-check form-switch">
+                            <input asp-for="Car.OfferDriverService" class="form-check-input" type="checkbox" />
+                            <label asp-for="Car.OfferDriverService" class="form-check-label">Cung cấp dịch vụ tài xế</label>
+                        </div>
+
+                        <div id="driverServiceSection" class="@(Model.Car.OfferDriverService ? "" : "d-none")">
+                            <div class="row mb-3 mt-3">
+                                <div class="col-md-6">
+                                    <label asp-for="Car.DriverFeePerDay" class="form-label">Phí tài xế theo ngày (VNĐ)</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light"><i class="bi bi-person"></i></span>
+                                        <input asp-for="Car.DriverFeePerDay" class="form-control" type="number" min="0" />
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label asp-for="Car.DriverFeePerHour" class="form-label">Phí tài xế theo giờ (VNĐ)</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light"><i class="bi bi-person"></i></span>
+                                        <input asp-for="Car.DriverFeePerHour" class="form-control" type="number" min="0" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="alert alert-info mb-0">
+                                <i class="bi bi-info-circle-fill me-2"></i>
+                                <span>Việc cung cấp tài xế giúp tăng thu nhập và mở rộng đối tượng khách hàng tiềm năng.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Tips -->
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">Hướng dẫn chỉnh sửa</h2>
+                    <p class="text-sm text-gray-600 mb-3">Để thu hút khách hàng tốt hơn, bạn nên:</p>
+                    <ul class="list-disc pl-5 text-sm text-gray-600 space-y-2">
+                        <li>Viết mô tả chi tiết về xe</li>
+                        <li>Tải lên nhiều hình ảnh chất lượng</li>
+                        <li>Cập nhật đầy đủ các tính năng của xe</li>
+                        <li>Đặt giá hợp lý với thị trường</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <!-- Validation Scripts -->
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        // Map initialization
+        var initialLat = @(Model.Car.Latitude.HasValue ? Model.Car.Latitude.Value.ToString("F6") : "10.7623");
+        var initialLng = @(Model.Car.Longitude.HasValue ? Model.Car.Longitude.Value.ToString("F6") : "106.6827");
+        var map = L.map('map').setView([initialLat, initialLng], 15);
+        var marker;
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        if (@Model.Car.Latitude.HasValue.ToString().ToLower() && @Model.Car.Longitude.HasValue.ToString().ToLower()) {
+            marker = L.marker([initialLat, initialLng]).addTo(map);
+        }
+
+        map.on('click', function(e) {
+            var lat = e.latlng.lat;
+            var lng = e.latlng.lng;
+
+            document.getElementById('latitude').value = lat.toFixed(6);
+            document.getElementById('longitude').value = lng.toFixed(6);
+
+            if (marker) {
+                marker.setLatLng(e.latlng);
+            } else {
+                marker = L.marker(e.latlng).addTo(map);
+            }
+        });
+
+                document.querySelector('input[name="DisplayPricePerDay"]').addEventListener('change', function() {
+            document.querySelector('input[name="Car.PricePerDay"]').value = this.value;
+        });
+
+
+        document.getElementById('Car_OfferDriverService').addEventListener('change', function() {
+            const driverSection = document.getElementById('driverServiceSection');
+            driverSection.classList.toggle('d-none', !this.checked);
+        });
+
+        // Get current location
+        document.getElementById('getCurrentLocation').addEventListener('click', function() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        var lat = position.coords.latitude;
+                        var lng = position.coords.longitude;
+
+                        document.getElementById('latitude').value = lat.toFixed(6);
+                        document.getElementById('longitude').value = lng.toFixed(6);
+
+                        map.setView([lat, lng], 16);
+
+                        if (marker) {
+                            marker.setLatLng([lat, lng]);
+                        } else {
+                            marker = L.marker([lat, lng]).addTo(map);
+                        }
+                    },
+                    function(error) {
+                        alert("Không thể lấy vị trí: " + error.message);
+                    }
+                );
+            } else {
+                alert("Trình duyệt của bạn không hỗ trợ định vị.");
+            }
+        });
+
+        // Search address
+        document.getElementById('searchAddress').addEventListener('click', function() {
+            var province = document.querySelector("select[name='Car.ProvinceId'] option:checked").text;
+            var address = document.getElementById('Car_DetailedAddress').value;
+
+            if (address && province && province !== "-- Chọn Tỉnh/Thành phố --") {
+                var searchQuery = address + ', ' + province + ', Vietnam';
+                alert("Đang tìm kiếm địa chỉ: " + searchQuery);
+
+                fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(searchQuery)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data && data.length > 0) {
+                            var lat = parseFloat(data[0].lat);
+                            var lng = parseFloat(data[0].lon);
+
+                            document.getElementById('latitude').value = lat.toFixed(6);
+                            document.getElementById('longitude').value = lng.toFixed(6);
+
+                            map.setView([lat, lng], 16);
+
+                            if (marker) {
+                                marker.setLatLng([lat, lng]);
+                            } else {
+                                marker = L.marker([lat, lng]).addTo(map);
+                            }
+                        } else {
+                            alert("Không tìm thấy địa chỉ. Vui lòng thử lại với địa chỉ chi tiết hơn.");
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Lỗi khi tìm kiếm địa chỉ:", error);
+                        alert("Có lỗi xảy ra khi tìm kiếm địa chỉ. Vui lòng thử lại sau.");
+                    });
+            } else {
+                alert("Vui lòng nhập địa chỉ chi tiết và chọn tỉnh/thành phố trước khi tìm kiếm.");
+            }
+        });
+
+        // Image preview
+        document.getElementById('MainImage').addEventListener('change', function() {
+            const preview = document.getElementById('imagePreview');
+            const previewImage = document.getElementById('previewImage');
+
+            if (this.files && this.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImage.src = e.target.result;
+                    preview.classList.remove('hidden');
+                }
+                reader.readAsDataURL(this.files[0]);
+            } else {
+                preview.classList.add('hidden');
+            }
+        });
+
+        // Tooltips
+        document.addEventListener('DOMContentLoaded', function() {
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        });
+
+        // Hourly rental toggle
+        document.getElementById('enableHourlyRental').addEventListener('change', function() {
+            const hourlySection = document.getElementById('hourlyRentalSection');
+            const priceInput = document.getElementById('pricePerHourInput');
+            const switchLabel = document.getElementById('switchLabel');
+
+            if (this.checked) {
+                hourlySection.classList.remove('hidden');
+                if (parseInt(priceInput.value) === 0) {
+                    priceInput.value = "10000";
+                }
+                switchLabel.textContent = "Đã bật";
+            } else {
+                hourlySection.classList.add('hidden');
+                priceInput.value = "0";
+                switchLabel.textContent = "Đã tắt";
+            }
+        });
+
+             // Hiển thị/ẩn mục cấu hình dịch vụ tài xế
+        document.getElementById('Car_OfferDriverService').addEventListener('change', function() {
+            const driverServiceOptions = document.getElementById('driverServiceOptions');
+            if (this.checked) {
+                driverServiceOptions.style.display = 'block';
+            } else {
+                driverServiceOptions.style.display = 'none';
+            }
+        });
+
+        // Kiểm tra ban đầu khi tải trang
+        document.addEventListener('DOMContentLoaded', function() {
+            const offerDriverService = document.getElementById('Car_OfferDriverService');
+            const driverServiceOptions = document.getElementById('driverServiceOptions');
+
+            if (offerDriverService && offerDriverService.checked) {
+                driverServiceOptions.style.display = 'block';
+            }
+        });
+    </script>
+}

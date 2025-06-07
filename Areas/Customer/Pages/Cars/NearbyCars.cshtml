@@ -1,0 +1,450 @@
+﻿@page
+@model GotoCarRental.Areas.Customer.Pages.Cars.NearbyCarsModel
+@{
+    ViewData["Title"] = "Xe gần bạn";
+}
+
+<div class="container py-5">
+    <h1 class="mb-4">Xe gần vị trí của bạn</h1>
+    
+    @if (!Model.Lat.HasValue || !Model.Lng.HasValue)
+    {
+        <div class="alert alert-info">
+            <p class="mb-3">Cho phép website truy cập vị trí của bạn để tìm các xe gần nhất.</p>
+            <button id="getLocationBtn" class="btn btn-primary">
+                <i class="bi bi-geo-alt me-2"></i>Lấy vị trí của tôi
+            </button>
+        </div>
+    }
+    else
+    {
+        <div class="mb-4">
+            <form method="get" class="row g-3 align-items-end">
+                <input type="hidden" name="Lat" value="@Model.Lat" />
+                <input type="hidden" name="Lng" value="@Model.Lng" />
+                
+                <div class="col-md-6">
+                    <label for="maxDistance" class="form-label">Khoảng cách tìm kiếm (km)</label>
+                    <input type="range" class="form-range" id="maxDistance" name="MaxDistance" 
+                           min="1" max="50" step="1" value="@Model.MaxDistance" />
+                    <div class="text-center" id="distanceValue">@Model.MaxDistance km</div>
+                </div>
+                
+                <div class="col-md-6">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-search me-2"></i>Tìm kiếm lại
+                    </button>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Thêm bản đồ hiển thị các xe trong khu vực -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-map me-2"></i>Bản đồ xe gần bạn
+                </h5>
+                <span class="badge bg-light text-primary">
+                    Đang hiển thị @Model.NearbyCars.Count() xe trong bán kính @Model.MaxDistance km
+                </span>
+            </div>
+            <div class="card-body p-0">
+                <div id="nearbyCarsMap" style="height: 500px;"></div>
+            </div>
+        </div>
+        
+        <div class="mb-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2 class="h4">Danh sách xe</h2>
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-sm btn-outline-primary" id="showListView">
+                        <i class="bi bi-list me-1"></i>Dạng danh sách
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-primary active" id="showGridView">
+                        <i class="bi bi-grid me-1"></i>Dạng lưới
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        @if (!Model.NearbyCars.Any())
+        {
+            <div class="alert alert-warning">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                Không tìm thấy xe nào trong phạm vi @Model.MaxDistance km từ vị trí của bạn.
+            </div>
+        }
+        else
+        {
+            <div id="gridView">
+                <div class="row">
+                    @foreach (var car in Model.NearbyCars)
+                    {
+                        <div class="col-md-6 col-lg-4 mb-4">
+                            <div class="card h-100 shadow-sm car-card" data-car-id="@car.Id">
+                                <div class="position-relative">
+                                    @if (car.CarImages != null && car.CarImages.Any())
+                                    {
+                                        var mainImage = car.CarImages.FirstOrDefault(ci => ci.IsMainImage) ?? car.CarImages.First();
+                                        <img src="/@(mainImage.ImageUrl.TrimStart('/'))" class="card-img-top" alt="@car.Name" style="height: 200px; object-fit: cover;">
+                                    }
+                                    else
+                                    {
+                                        <img src="/images/car-placeholder.png" class="card-img-top" alt="@car.Name" style="height: 200px; object-fit: cover;">
+                                    }
+                                    
+                                    @if (car.DistanceFromUser.HasValue)
+                                    {
+                                        <span class="position-absolute top-0 end-0 badge bg-primary m-2">
+                                            <i class="bi bi-geo-alt me-1"></i>
+                                            @car.DistanceFromUser.Value.ToString("F1") km
+                                        </span>
+                                    }
+                                </div>
+                                
+                                <div class="card-body">
+                                    <h5 class="card-title">@car.Name</h5>
+                                    <p class="text-muted small mb-1">
+                                        <i class="bi bi-tag me-1"></i>@car.Brand?.Name
+                                        <span class="mx-1">|</span>
+                                        <i class="bi bi-car-front me-1"></i>@car.Category?.Name
+                                    </p>
+                                    <p class="text-primary fw-bold mb-2">@car.PricePerDay.ToString("N0") VNĐ/ngày</p>
+                                    <p class="small text-truncate mb-2">
+                                        <i class="bi bi-geo-alt me-1"></i>
+                                        @(string.IsNullOrEmpty(car.DetailedAddress) ? car.Province?.Name : $"{car.DetailedAddress}, {car.Province?.Name}")
+                                    </p>
+                                </div>
+                                
+                                <div class="card-footer bg-white border-top-0">
+                                    <div class="d-grid gap-2">
+                                        <a asp-area="Customer" asp-page="/Cars/Details" asp-route-id="@car.Id" 
+                                           class="btn btn-outline-primary">
+                                            <i class="bi bi-info-circle me-2"></i>Chi tiết
+                                        </a>
+                                        <a asp-area="Customer" asp-page="/Rentals/Create" asp-route-id="@car.Id"
+                                           class="btn btn-primary">
+                                            <i class="bi bi-cart-plus me-2"></i>Thuê xe
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+            
+            <div id="listView" class="d-none">
+                <div class="list-group">
+                    @foreach (var car in Model.NearbyCars)
+                    {
+                        <div class="list-group-item list-group-item-action mb-3 shadow-sm car-list-item" data-car-id="@car.Id">
+                            <div class="row g-0">
+                                <div class="col-md-3">
+                                    @if (car.CarImages != null && car.CarImages.Any())
+                                    {
+                                        var mainImage = car.CarImages.FirstOrDefault(ci => ci.IsMainImage) ?? car.CarImages.First();
+                                        <img src="/@(mainImage.ImageUrl.TrimStart('/'))" class="img-fluid rounded" alt="@car.Name" style="height: 150px; object-fit: cover;">
+                                    }
+                                    else
+                                    {
+                                        <img src="/images/car-placeholder.png" class="img-fluid rounded" alt="@car.Name" style="height: 150px; object-fit: cover;">
+                                    }
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between">
+                                            <h5 class="card-title">@car.Name</h5>
+                                            @if (car.DistanceFromUser.HasValue)
+                                            {
+                                                <span class="badge bg-primary">
+                                                    <i class="bi bi-geo-alt me-1"></i>
+                                                    @car.DistanceFromUser.Value.ToString("F1") km
+                                                </span>
+                                            }
+                                        </div>
+                                        <p class="text-muted small">
+                                            <i class="bi bi-tag me-1"></i>@car.Brand?.Name
+                                            <span class="mx-1">|</span>
+                                            <i class="bi bi-car-front me-1"></i>@car.Category?.Name
+                                        </p>
+                                        <p class="text-primary fw-bold">@car.PricePerDay.ToString("N0") VNĐ/ngày</p>
+                                        <p class="small">
+                                            <i class="bi bi-geo-alt me-1"></i>
+                                            @(string.IsNullOrEmpty(car.DetailedAddress) ? car.Province?.Name : $"{car.DetailedAddress}, {car.Province?.Name}")
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 d-flex align-items-center">
+                                    <div class="w-100 px-3">
+                                        <div class="d-grid gap-2">
+                                            <a asp-area="Customer" asp-page="/Cars/Details" asp-route-id="@car.Id" 
+                                               class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-info-circle me-1"></i>Chi tiết
+                                            </a>
+                                            <a asp-area="Customer" asp-page="/Rentals/Create" asp-route-id="@car.Id"
+                                               class="btn btn-sm btn-primary">
+                                                <i class="bi bi-cart-plus me-1"></i>Thuê xe
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    }
+</div>
+
+@section Scripts {
+    <!-- Thêm thư viện Leaflet -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <script>
+        // Hiển thị giá trị khoảng cách
+        const distanceSlider = document.getElementById('maxDistance');
+        const distanceValue = document.getElementById('distanceValue');
+        
+        if (distanceSlider) {
+            distanceSlider.addEventListener('input', function() {
+                distanceValue.textContent = this.value + ' km';
+            });
+        }
+        
+        // Xử lý lấy vị trí
+        document.getElementById('getLocationBtn')?.addEventListener('click', function() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    // Success
+                    function(position) {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        window.location.href = `?Lat=${lat}&Lng=${lng}&MaxDistance=10`;
+                    },
+                    // Error
+                    function(error) {
+                        let message;
+                        switch(error.code) {
+                            case error.PERMISSION_DENIED:
+                                message = "Bạn đã từ chối cho phép truy cập vị trí.";
+                                break;
+                            case error.POSITION_UNAVAILABLE:
+                                message = "Không thể xác định vị trí của bạn.";
+                                break;
+                            case error.TIMEOUT:
+                                message = "Quá thời gian xác định vị trí.";
+                                break;
+                            default:
+                                message = "Đã xảy ra lỗi khi xác định vị trí.";
+                                break;
+                        }
+                        alert(message);
+                    }
+                );
+            } else {
+                alert("Trình duyệt của bạn không hỗ trợ định vị.");
+            }
+        });
+        
+        // Tạo mảng dữ liệu car cho bản đồ, tránh vòng lặp tham chiếu JSON
+        const carMapData = [
+            @foreach (var car in Model.NearbyCars)
+            {
+                if (car.Latitude.HasValue && car.Longitude.HasValue)
+                {
+                    string mainImageUrl = "/images/car-placeholder.png";
+                    if (car.CarImages != null && car.CarImages.Any())
+                    {
+                        var mainImage = car.CarImages.FirstOrDefault(ci => ci.IsMainImage) ?? car.CarImages.First();
+                        mainImageUrl = "/" + mainImage.ImageUrl.TrimStart('/');
+                    }
+
+                    string address = !string.IsNullOrEmpty(car.DetailedAddress) 
+                        ? car.DetailedAddress 
+                        : (car.Province != null ? car.Province.Name : "");
+
+                    <text>
+                    {
+                        id: @car.Id,
+                        name: "@Html.Raw(System.Text.Json.JsonSerializer.Serialize(car.Name).Trim('"'))",
+                        latitude: @car.Latitude,
+                        longitude: @car.Longitude,
+                        pricePerDay: @car.PricePerDay,
+                        distanceFromUser: @(car.DistanceFromUser ?? 0),
+                        brandName: "@(car.Brand?.Name ?? "")",
+                        categoryName: "@(car.Category?.Name ?? "")",
+                        address: "@Html.Raw(System.Text.Json.JsonSerializer.Serialize(address).Trim('"'))",
+                        imageUrl: "@mainImageUrl"
+                    },
+                    </text>
+                }
+            }
+        ];
+        
+        // Thêm xử lý bản đồ
+        document.addEventListener('DOMContentLoaded', function() {
+            // Khởi tạo bản đồ nếu có tọa độ người dùng
+            const mapContainer = document.getElementById('nearbyCarsMap');
+            if (mapContainer && @Json.Serialize(Model.Lat.HasValue) && @Json.Serialize(Model.Lng.HasValue)) {
+                // Tọa độ người dùng
+                const userLat = @Json.Serialize(Model.Lat);
+                const userLng = @Json.Serialize(Model.Lng);
+                
+                // Khởi tạo bản đồ với vị trí người dùng
+                const map = L.map('nearbyCarsMap').setView([userLat, userLng], 13);
+                
+                // Thêm layer bản đồ OpenStreetMap
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                }).addTo(map);
+                
+                // Thêm marker vị trí người dùng với biểu tượng và màu khác
+                const userIcon = L.divIcon({
+                    html: '<i class="bi bi-person-fill" style="font-size: 24px; color: #0d6efd;"></i>',
+                    className: 'user-marker',
+                    iconSize: [30, 30],
+                    iconAnchor: [15, 15]
+                });
+                
+                const userMarker = L.marker([userLat, userLng], {icon: userIcon}).addTo(map);
+                userMarker.bindPopup('<strong>Vị trí của bạn</strong>').openPopup();
+                
+                // Vẽ vòng tròn bán kính tìm kiếm
+                const radiusCircle = L.circle([userLat, userLng], {
+                    color: '#0d6efd',
+                    fillColor: '#0d6efd',
+                    fillOpacity: 0.1,
+                    radius: @Model.MaxDistance * 1000 // Chuyển từ km sang m
+                }).addTo(map);
+                
+                // Thêm marker cho mỗi xe từ mảng dữ liệu đã xử lý
+                const carMarkers = [];
+                const carPopups = {};
+                
+                carMapData.forEach(car => {
+                    if (car.latitude && car.longitude) {
+                        // Tạo icon tùy chỉnh cho xe
+                        const carIcon = L.divIcon({
+                            html: '<i class="bi bi-car-front-fill" style="font-size: 20px; color: #fd7e14;"></i>',
+                            className: 'car-marker',
+                            iconSize: [30, 30],
+                            iconAnchor: [15, 15]
+                        });
+                        
+                        // Tạo nội dung popup
+                        const popupContent = `
+                            <div class="car-popup" style="width: 200px;">
+                                <img src="${car.imageUrl}" alt="${car.name}" style="width: 100%; height: 120px; object-fit: cover;">
+                                <h5 class="mt-2 mb-1">${car.name}</h5>
+                                <p class="m-0 text-primary" style="font-weight: bold;">${car.pricePerDay.toLocaleString('vi-VN')} VNĐ/ngày</p>
+                                <p class="m-0 small">${car.address}</p>
+                                <p class="m-0 small text-muted">${car.distanceFromUser.toFixed(1)} km từ bạn</p>
+                                <div class="mt-2">
+                                    <a href="/Customer/Cars/Details?id=${car.id}" class="btn btn-sm btn-outline-primary w-100 mb-1">Chi tiết</a>
+                                    <a href="/Customer/Rentals/Create?id=${car.id}" class="btn btn-sm btn-primary w-100">Thuê xe</a>
+                                </div>
+                            </div>
+                        `;
+                        
+                        // Tạo marker và thêm vào bản đồ
+                        const marker = L.marker([car.latitude, car.longitude], {icon: carIcon}).addTo(map);
+                        marker.bindPopup(popupContent);
+                        
+                        // Sự kiện khi nhấp vào marker
+                        marker.on('click', function() {
+                            // Highlight card tương ứng khi click vào marker
+                            document.querySelectorAll('.car-card, .car-list-item').forEach(el => {
+                                el.classList.remove('border-primary');
+                            });
+                            
+                            const cardElement = document.querySelector(`.car-card[data-car-id="${car.id}"]`);
+                            const listElement = document.querySelector(`.car-list-item[data-car-id="${car.id}"]`);
+                            
+                            if (cardElement) {
+                                cardElement.classList.add('border-primary');
+                                cardElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            }
+                            
+                            if (listElement) {
+                                listElement.classList.add('border-primary');
+                                listElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            }
+                        });
+                        
+                        carMarkers.push(marker);
+                        carPopups[car.id] = marker;
+                    }
+                });
+                
+                // Tự động điều chỉnh view để hiển thị tất cả marker nếu có
+                if (carMarkers.length > 0) {
+                    const group = new L.featureGroup(carMarkers);
+                    map.fitBounds(group.getBounds().pad(0.1));
+                }
+                
+                // Khi hover vào card hoặc list-item, hiển thị popup tương ứng trên bản đồ
+                document.querySelectorAll('.car-card, .car-list-item').forEach(el => {
+                    el.addEventListener('mouseenter', function() {
+                        const carId = parseInt(this.getAttribute('data-car-id'));
+                        const marker = carPopups[carId];
+                        if (marker) {
+                            marker.openPopup();
+                        }
+                    });
+                });
+            }
+            
+            // Xử lý chuyển đổi giữa chế độ xem lưới và danh sách
+            const gridViewBtn = document.getElementById('showGridView');
+            const listViewBtn = document.getElementById('showListView');
+            const gridView = document.getElementById('gridView');
+            const listView = document.getElementById('listView');
+            
+            if (gridViewBtn && listViewBtn && gridView && listView) {
+                gridViewBtn.addEventListener('click', function() {
+                    gridView.classList.remove('d-none');
+                    listView.classList.add('d-none');
+                    gridViewBtn.classList.add('active');
+                    listViewBtn.classList.remove('active');
+                });
+                
+                listViewBtn.addEventListener('click', function() {
+                    listView.classList.remove('d-none');
+                    gridView.classList.add('d-none');
+                    listViewBtn.classList.add('active');
+                    gridViewBtn.classList.remove('active');
+                });
+            }
+        });
+    </script>
+    
+    <style>
+        /* Kiểu cho thẻ thông tin xe khi hover/active */
+        .car-card, .car-list-item {
+            transition: all 0.2s ease;
+        }
+        
+        .car-card:hover, .car-list-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 .5rem 1rem rgba(0,0,0,.15) !important;
+        }
+        
+        .car-card.border-primary, .car-list-item.border-primary {
+            border: 2px solid #0d6efd !important;
+        }
+        
+        /* Điều chỉnh kích thước popup trên bản đồ */
+        .leaflet-popup-content {
+            margin: 10px;
+        }
+        
+        /* Tùy chỉnh marker */
+        .user-marker, .car-marker {
+            background: none;
+            border: none;
+        }
+    </style>
+}

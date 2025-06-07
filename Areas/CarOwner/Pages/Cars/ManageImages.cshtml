@@ -1,0 +1,228 @@
+﻿@page "{id:int}"
+@model GotoCarRental.Areas.CarOwner.Pages.Cars.ManageImagesModel
+@{
+    ViewData["Title"] = "Quản lý hình ảnh xe";
+}
+
+<div class="container py-5">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-area="CarOwner" asp-page="/Index">Trang chủ</a></li>
+            <li class="breadcrumb-item"><a asp-area="CarOwner" asp-page="/Cars/Index">Danh sách xe</a></li>
+            <li class="breadcrumb-item"><a asp-area="CarOwner" asp-page="/Cars/Details" asp-route-id="@Model.Car.Id">Chi tiết xe</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Quản lý hình ảnh</li>
+        </ol>
+    </nav>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show mb-4">
+            <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show mb-4">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="display-6 fw-bold">
+            <i class="bi bi-images text-primary me-2"></i>
+            Quản lý hình ảnh xe
+        </h1>
+        <a asp-page="/Cars/Details" asp-route-id="@Model.Car.Id" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-2"></i>Quay lại chi tiết xe
+        </a>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Thông tin xe</h5>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3">
+                    @if (Model.Car.CarImages != null && Model.Car.CarImages.Any())
+                    {
+                        var mainImage = Model.Car.CarImages.FirstOrDefault(i => i.IsMainImage) ?? Model.Car.CarImages.First();
+                        <img src="@mainImage.ImageUrl" class="img-fluid rounded" alt="@Model.Car.Name">
+                    }
+                    else
+                    {
+                        <img src="/images/car-placeholder.png" class="img-fluid rounded" alt="@Model.Car.Name">
+                    }
+                </div>
+                <div class="col-md-9">
+                    <h4>@Model.Car.Name</h4>
+                    <p class="text-muted">
+                        @Model.Car.Brand.Name - @Model.Car.Category.Name
+                    </p>
+                    <p>@Model.Car.Description</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0"><i class="bi bi-cloud-upload me-2"></i> Tải lên hình ảnh mới</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data" asp-page-handler="Upload" asp-route-id="@Model.Car.Id">
+                        <div class="mb-3">
+                            <label for="newImages" class="form-label">Chọn hình ảnh</label>
+                            <input type="file" class="form-control" id="newImages" name="NewImages" multiple accept="image/*" required>
+                            <div class="form-text">Bạn có thể chọn nhiều hình ảnh cùng lúc</div>
+                        </div>
+                        <div class="mb-3">
+                            <div id="imagePreviewContainer" class="d-flex flex-wrap"></div>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-upload me-2"></i> Tải lên
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0"><i class="bi bi-info-circle me-2"></i> Thông tin</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                            Hình ảnh nên có tỷ lệ 4:3 hoặc 16:9
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                            Kích thước tối đa mỗi ảnh: 5MB
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                            Định dạng hỗ trợ: JPG, JPEG, PNG
+                        </li>
+                        <li>
+                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                            Tối đa 10 hình ảnh cho mỗi xe
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0"><i class="bi bi-images me-2"></i> Danh sách hình ảnh</h5>
+                        <span class="badge bg-primary">@Model.Images.Count hình ảnh</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    @if (Model.Images.Any())
+                    {
+                        <div class="row row-cols-1 row-cols-md-3 g-4">
+                            @foreach (var image in Model.Images)
+                            {
+                                <div class="col">
+                                    <div class="card h-100 @(image.IsMainImage ? "border-primary" : "")">
+                                        <img src="@image.ImageUrl" class="card-img-top" alt="Car Image" style="height: 150px; object-fit: cover;">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                @if (image.IsMainImage)
+                                                {
+                                                    <span class="badge bg-primary">Ảnh chính</span>
+                                                }
+                                                else
+                                                {
+                                                    <form method="post" asp-page-handler="SetMainImage" asp-route-id="@Model.Car.Id" asp-route-imageId="@image.Id">
+                                                        <button type="submit" class="btn btn-sm btn-outline-primary">Đặt làm ảnh chính</button>
+                                                    </form>
+                                                }
+
+                                                <form method="post" asp-page-handler="DeleteImage" asp-route-id="@Model.Car.Id" asp-route-imageId="@image.Id"
+                                                      onsubmit="return confirm('Bạn có chắc chắn muốn xóa hình ảnh này?');">
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="bi bi-images fs-1 text-muted mb-3"></i>
+                            <p class="mb-0">Chưa có hình ảnh nào cho xe này</p>
+                            <p class="text-muted">Hãy tải lên hình ảnh để giúp người thuê dễ dàng tìm hiểu về xe của bạn</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const imageInput = document.getElementById('newImages');
+            const previewContainer = document.getElementById('imagePreviewContainer');
+
+            imageInput.addEventListener('change', function() {
+                previewContainer.innerHTML = '';
+
+                if (this.files && this.files.length > 0) {
+                    const maxFilesToShow = Math.min(this.files.length, 4);
+
+                    for (let i = 0; i < maxFilesToShow; i++) {
+                        const file = this.files[i];
+                        const reader = new FileReader();
+
+                        reader.onload = function(e) {
+                            const preview = document.createElement('div');
+                            preview.className = 'm-1';
+                            preview.style.width = '60px';
+                            preview.style.height = '60px';
+
+                            const img = document.createElement('img');
+                            img.src = e.target.result;
+                            img.className = 'img-thumbnail';
+                            img.style.width = '100%';
+                            img.style.height = '100%';
+                            img.style.objectFit = 'cover';
+
+                            preview.appendChild(img);
+                            previewContainer.appendChild(preview);
+                        }
+
+                        reader.readAsDataURL(file);
+                    }
+
+                    if (this.files.length > 4) {
+                        const moreLabel = document.createElement('div');
+                        moreLabel.className = 'm-1 d-flex align-items-center justify-content-center text-primary';
+                        moreLabel.textContent = `+${this.files.length - 4} more`;
+                        previewContainer.appendChild(moreLabel);
+                    }
+                }
+            });
+        });
+    </script>
+}

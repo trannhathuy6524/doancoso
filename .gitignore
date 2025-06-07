@@ -1,0 +1,56 @@
+# Build results
+bin/
+obj/
+out/
+artifacts/
+
+# User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Rider
+.idea/
+
+# Visual Studio
+.vs/
+.vscode/
+
+# NuGet
+*.nupkg
+*.snupkg
+packages/
+project.lock.json
+project.fragment.lock.json
+*.nuspec
+
+# Logs
+*.log
+
+# ASP.NET Core
+appsettings.*.json
+*.db
+*.sqlite
+.env
+
+# Publish output
+publish/
+wwwroot/lib/
+
+# Others
+*.tgz
+*.tmp
+*.bak
+*.swp
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

@@ -1,0 +1,1055 @@
+﻿@page
+@model GotoCarRental.Areas.Customer.Pages.Cars.IndexModel
+@{
+    ViewData["Title"] = "Danh sách xe";
+}
+
+<div class="container-fluid py-4">
+    <!-- Hero Section -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4 bg-primary bg-gradient text-white">
+        <div class="card-body p-4 p-md-5">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <h1 class="display-5 fw-bold mb-2">Thuê xe ngay hôm nay</h1>
+                    <p class="lead mb-4">Trải nghiệm chuyến đi tuyệt vời với hơn <span class="fw-bold">@Model.TotalCars</span> lựa chọn xe chất lượng cao</p>
+                    
+                </div>
+                <div class="col-lg-4 d-none d-lg-block text-center">
+                    <i class="bi bi-car-front-fill display-1 mb-3 opacity-75"></i>
+                    <div class="d-flex justify-content-center gap-2">
+                        <span class="badge bg-warning text-dark rounded-pill px-3 py-2">
+                            <i class="bi bi-lightning-charge-fill me-1"></i> Đặt xe nhanh
+                        </span>
+                        <span class="badge bg-info text-dark rounded-pill px-3 py-2">
+                            <i class="bi bi-shield-check me-1"></i> Đảm bảo giá tốt
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="comparisonBar" class="fixed-bottom bg-dark text-white p-3" style="display:none;">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-8" id="comparisonItems">
+                    <div class="d-flex flex-wrap">
+                        <!-- Selected cars will be added here dynamically -->
+                    </div>
+                </div>
+                <div class="col-lg-4 text-end">
+                    <span id="comparisonCounter" class="me-3">0 xe được chọn</span>
+                    <button id="compareButton" class="btn btn-primary" disabled>
+                        <i class="bi bi-bar-chart-fill me-2"></i>So sánh
+                    </button>
+                    <button id="clearComparisonButton" class="btn btn-outline-light ms-2">
+                        <i class="bi bi-x-circle"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Flash Deals Section (optional) -->
+    <div class="flash-deals mb-4 d-none" id="flashDealsSection">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="h4 fw-bold mb-0"><i class="bi bi-lightning-charge-fill text-warning me-2"></i> Ưu đãi hấp dẫn</h2>
+            <div class="d-flex align-items-center">
+                <span class="text-danger me-2">Kết thúc sau:</span>
+                <div class="countdown d-flex gap-2">
+                    <span class="badge bg-danger px-2 py-1">12</span>:
+                    <span class="badge bg-danger px-2 py-1">24</span>:
+                    <span class="badge bg-danger px-2 py-1">36</span>
+                </div>
+            </div>
+        </div>
+        <div class="row g-3">
+            <!-- Flash deal items would go here -->
+        </div>
+    </div>
+
+    <!-- Filter & Sort Options -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4" id="quick-filters">
+        <div class="card-header bg-light border-0 rounded-top-4 py-3">
+            <h2 class="h5 fw-bold mb-0"><i class="bi bi-sliders me-2"></i> Tìm xe phù hợp</h2>
+        </div>
+        @await Component.InvokeAsync("CarComparison")
+        <div class="card-body p-4">
+            <form method="get" id="filterForm" class="needs-validation" novalidate>
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-3">
+                        <label asp-for="BrandId" class="form-label fw-medium">Hãng xe</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="bi bi-tag"></i></span>
+                            <select asp-for="BrandId" asp-items="Model.BrandSelectList" class="form-select" onchange="document.getElementById('filterForm').submit()">
+                                <option value="">Tất cả hãng xe</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label asp-for="CategoryId" class="form-label fw-medium">Loại xe</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="bi bi-car-front"></i></span>
+                            <select asp-for="CategoryId" asp-items="Model.CategorySelectList" class="form-select" onchange="document.getElementById('filterForm').submit()">
+                                <option value="">Tất cả loại xe</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label fw-medium">Giá thuê</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="bi bi-cash"></i></span>
+                            <select name="priceRange" class="form-select" id="priceRange" onchange="document.getElementById('filterForm').submit()">
+                                <option value="">Tất cả mức giá</option>
+                                <option value="0-500000">Dưới 500.000đ/ngày</option>
+                                <option value="500000-1000000">500.000đ - 1.000.000đ/ngày</option>
+                                <option value="1000000-2000000">1.000.000đ - 2.000.000đ/ngày</option>
+                                <option value="2000000-0">Trên 2.000.000đ/ngày</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label asp-for="SortBy" class="form-label fw-medium">Sắp xếp theo</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="bi bi-sort-down"></i></span>
+                            <select asp-for="SortBy" asp-items="Model.SortSelectList" class="form-select" onchange="document.getElementById('filterForm').submit()"></select>
+                        </div>
+                    </div>
+
+                    <!-- Thêm phần tìm kiếm theo dịch vụ -->
+                    <div class="col-md-3">
+                        <label class="form-label fw-medium">Hình thức dịch vụ</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="bi bi-person-badge"></i></span>
+                            <select asp-for="ServiceType" class="form-select" onchange="document.getElementById('filterForm').submit()">
+                                <option value="">Tất cả dịch vụ</option>
+                                <option value="SelfDrive">Tự lái</option>
+                                <option value="WithDriver">Có tài xế</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Thêm phần tìm kiếm theo hình thức thuê -->
+                    <div class="col-md-3">
+                        <label class="form-label fw-medium">Hình thức thuê</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="bi bi-calendar"></i></span>
+                            <select asp-for="RentalType" class="form-select" onchange="document.getElementById('filterForm').submit()">
+                                <option value="">Tất cả hình thức</option>
+                                <option value="ByDay">Thuê theo ngày</option>
+                                <option value="ByHour">Thuê theo giờ</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <input type="hidden" asp-for="CurrentPage" value="1" />
+                </div>
+
+               
+
+
+
+            </form>
+        </div>
+    </div>
+
+    <!-- Results summary and tools -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+        <div class="bg-light rounded-pill px-3 py-2 mb-2 mb-md-0">
+            <span class="text-muted">Hiển thị </span>
+            <span class="fw-bold text-primary">@Model.Cars.Count()</span>
+            <span class="text-muted"> trong tổng số </span>
+            <span class="fw-bold text-primary">@Model.TotalCars</span>
+            <span class="text-muted"> xe</span>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button type="button" id="viewToggleGrid" class="btn btn-sm btn-outline-secondary active" aria-label="Grid view">
+                <i class="bi bi-grid-3x3-gap-fill"></i>
+            </button>
+            <button type="button" id="viewToggleList" class="btn btn-sm btn-outline-secondary" aria-label="List view">
+                <i class="bi bi-list-ul"></i>
+            </button>
+            <button type="button" id="compareButton" class="btn btn-sm btn-outline-primary d-none">
+                <i class="bi bi-arrow-left-right me-1"></i> So sánh (<span id="compareCount">0</span>)
+            </button>
+        </div>
+    </div>
+
+    <!-- Cars Grid -->
+    <div class="row g-4 mb-4" id="carsGridView">
+        @foreach (var car in Model.Cars)
+        {
+            <div class="col-md-6 col-lg-4 car-item">
+                <div class="card h-100 border-0 rounded-4 shadow-sm car-card">
+                    <!-- Badges -->
+                    @* @if (car.IsAvailable) *@
+                    @* { *@
+                    @*     <div class="position-absolute top-0 start-0 p-3 z-2"> *@
+                    @*         <span class="badge bg-success rounded-pill px-3 py-2"> *@
+                    @*             <i class="bi bi-check-circle-fill me-1"></i> Có sẵn *@
+                    @*         </span> *@
+                    @*     </div> *@
+                    @* } *@
+
+                    <!-- Compare checkbox -->
+                    <div class="card-footer bg-white d-flex justify-content-between align-items-center">
+                        <div class="form-check">
+                            <input class="form-check-input compare-checkbox" type="checkbox" value="@car.Id" id="compare-@car.Id" data-car-id="@car.Id" data-car-name="@car.Name" data-car-image="@(car.CarImages.FirstOrDefault(ci => ci.IsMainImage)?.ImageUrl ?? "/images/car-placeholder.png")">
+                            <label class="form-check-label" for="compare-@car.Id">
+                                So sánh
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="position-relative overflow-hidden">
+                        <!-- Car image with slider indicators -->
+
+                        <div class="car-image-wrapper">
+
+                            @if (car.CarImages != null && car.CarImages.Any())
+                            {
+                                var mainImage = car.CarImages.FirstOrDefault(ci => ci.IsMainImage) ?? car.CarImages.First();
+                                <img src="/@(mainImage.ImageUrl.TrimStart('/'))" class="card-img-top car-img" alt="@car.Name" loading="lazy">
+
+                                @if (car.CarImages.Count() > 1)
+                                {
+                                    <div class="image-indicators">
+                                        @for (int i = 0; i < Math.Min(car.CarImages.Count(), 5); i++)
+                                        {
+                                            <span class="image-indicator @(i == 0 ? "active" : "")"></span>
+                                        }
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <img src="/images/car-placeholder.png" class="card-img-top car-img" alt="@car.Name" loading="lazy">
+                            }
+                        </div>
+
+                        <!-- Price tag -->
+                        <div class="position-absolute bottom-0 end-0 p-3">
+                            <div class="price-tag">
+                                <div class="price-value fw-bold text-white bg-success rounded-top px-3 py-2 text-center">
+                                    @car.PricePerDay.ToString("N0") VNĐ
+                                </div>
+                                <div class="price-label bg-light rounded-bottom px-3 py-1 text-center">
+                                    <small class="text-muted">một ngày</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Overlay with quick buttons -->
+                        <div class="car-overlay">
+                            <div class="d-flex gap-2">
+                                <a asp-area="Customer" asp-page="/Cars/Details" asp-route-id="@car.Id" class="btn btn-primary rounded-pill">
+                                    <i class="bi bi-eye me-2"></i> Chi tiết
+                                </a>
+                                <a asp-area="Customer" asp-page="/Rentals/Create" asp-route-Id="@car.Id" class="btn btn-success rounded-pill">
+                                    <i class="bi bi-calendar-plus me-2"></i> Thuê ngay
+                                </a>
+                                
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body p-4">
+                        <h5 class="card-title fw-bold">@car.Name</h5>
+                        <!-- Brand and Category -->
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="badge bg-light text-dark rounded-pill px-3 py-2">
+                                <i class="bi bi-tag-fill me-1 text-primary"></i> @car.Brand?.Name
+                            </span>
+                            <span class="badge bg-light text-dark rounded-pill px-3 py-2">
+                                <i class="bi bi-car-front-fill me-1 text-primary"></i> @car.Category?.Name
+                            </span>
+                        </div>
+                        
+                        <!-- Đánh giá -->
+                        <div class="text-warning">
+                            @{
+                                var rating = Model.CarRatings.ContainsKey(car.Id) ? Model.CarRatings[car.Id] : 0;
+                                var fullStars = (int)Math.Floor(rating);
+                                var halfStar = (rating - fullStars) >= 0.5;
+                                var emptyStars = 5 - fullStars - (halfStar ? 1 : 0);
+                            }
+                            @for (int i = 0; i < fullStars; i++)
+                            {
+                                <i class="bi bi-star-fill"></i>
+                            }
+                            @if (halfStar)
+                            {
+                                <i class="bi bi-star-half"></i>
+                            }
+                            @for (int i = 0; i < emptyStars; i++)
+                            {
+                                <i class="bi bi-star"></i>
+                            }
+                            <small class="text-muted ms-1">@rating.ToString("0.0")</small>
+                        </div>
+
+
+                        <!-- Địa chỉ -->
+                        <p class="text-muted small mb-3">
+                            <i class="bi bi-geo-alt"></i>
+                            @if (car.Province != null)
+                            {
+                                @car.Province.Name
+                                @if (!string.IsNullOrEmpty(car.DetailedAddress))
+                                {
+                                    <span> - @car.DetailedAddress</span>
+                                }
+                            }
+                            else
+                            {
+                                <span>Không có thông tin địa chỉ</span>
+                            }
+                        </p>
+
+
+                        <!-- Features list -->
+                        @if (car.CarFeatures != null && car.CarFeatures.Any(cf => cf.Feature != null))
+                        {
+                            <div class="mt-3">
+                                <div class="row g-2">
+                                    @foreach (var feature in car.CarFeatures.Where(cf => cf.Feature != null).Take(4))
+                                    {
+                                        <div class="col-6">
+                                            <span class="badge bg-light text-dark d-flex align-items-center gap-1 mb-1 w-100">
+                                                <i class="bi bi-check-circle-fill text-success flex-shrink-0"></i>
+                                                <span class="text-truncate">@feature.Feature.Name</span>
+                                            </span>
+                                        </div>
+                                    }
+                                </div>
+                                @if (car.CarFeatures.Count() > 4)
+                                {
+                                    <div class="mt-2 text-center">
+                                        <span class="badge bg-light text-primary">
+                                            <i class="bi bi-plus-circle me-1"></i> @(car.CarFeatures.Count() - 4) tính năng khác
+                                        </span>
+                                    </div>
+                                }
+                            </div>
+                        }
+
+                    </div>
+
+                   
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Cars List View (hidden by default) -->
+    <div class="mb-4 d-none" id="carsListView">
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="list-group list-group-flush">
+                @foreach (var car in Model.Cars)
+                {
+                    <div class="list-group-item border-0 p-0">
+                        <div class="row g-0">
+                            <div class="col-md-3 position-relative">
+                                @if (car.CarImages != null && car.CarImages.Any())
+                                {
+                                    var mainImage = car.CarImages.FirstOrDefault(ci => ci.IsMainImage) ?? car.CarImages.First();
+                                    <img src="/@(mainImage.ImageUrl.TrimStart('/'))" class="img-fluid rounded-start-4" style="height: 100%; object-fit: cover;" alt="@car.Name">
+                                }
+                                else
+                                {
+                                    <img src="/images/car-placeholder.png" class="img-fluid rounded-start-4" style="height: 100%; object-fit: cover;" alt="@car.Name">
+                                }
+
+                                
+                            </div>
+                            <div class="col-md-6 p-3">
+                                <div class="d-flex justify-content-between">
+                                    <h5 class="card-title fw-bold">@car.Name</h5>
+                                    <div class="text-warning">
+                                        @{
+                                            var rating = Model.CarRatings.ContainsKey(car.Id) ? Model.CarRatings[car.Id] : 0;
+                                            var fullStars = (int)Math.Floor(rating);
+                                            var halfStar = (rating - fullStars) >= 0.5;
+                                            var emptyStars = 5 - fullStars - (halfStar ? 1 : 0);
+                                        }
+                                        @for (int i = 0; i < fullStars; i++)
+                                        {
+                                            <i class="bi bi-star-fill"></i>
+                                        }
+                                        @if (halfStar)
+                                        {
+                                            <i class="bi bi-star-half"></i>
+                                        }
+                                        @for (int i = 0; i < emptyStars; i++)
+                                        {
+                                            <i class="bi bi-star"></i>
+                                        }
+                                        <small class="text-muted ms-1">@rating.ToString("0.0")</small>
+                                    </div>
+
+
+                                </div>
+
+                                <div class="mb-2">
+                                    <span class="badge bg-light text-dark me-1">
+                                        <i class="bi bi-tag-fill me-1 text-primary"></i> @car.Brand?.Name
+                                    </span>
+                                    <span class="badge bg-light text-dark me-1">
+                                        <i class="bi bi-car-front-fill me-1 text-primary"></i> @car.Category?.Name
+                                    </span>
+                                    <span class="badge bg-light text-dark">
+                                        <i class="bi bi-geo-alt me-1"></i>
+                                        @if (car.Province != null)
+                                        {
+                                            @car.Province.Name
+                                        }
+                                        else
+                                        {
+                                            <span>Không có thông tin địa chỉ</span>
+                                        }
+                                    </span>
+
+                                </div>
+
+                                @if (car.CarFeatures != null && car.CarFeatures.Any(cf => cf.Feature != null))
+                                {
+                                    <div class="d-flex flex-wrap gap-1 mt-2">
+                                        @foreach (var feature in car.CarFeatures.Where(cf => cf.Feature != null).Take(5))
+                                        {
+                                            <span class="badge bg-light text-dark">
+                                                <i class="bi bi-check-circle-fill text-success me-1"></i> @feature.Feature.Name
+                                            </span>
+                                        }
+                                        @if (car.CarFeatures.Count() > 5)
+                                        {
+                                            <span class="badge bg-light text-primary">
+                                                +@(car.CarFeatures.Count() - 5)
+                                            </span>
+                                        }
+                                    </div>
+                                }
+                                <!-- Địa chỉ -->
+                                <p class="text-muted small mb-3">
+                                    <i class="bi bi-geo-alt"></i>
+                                    @if (car.Province != null)
+                                    {
+                                        @car.Province.Name
+                                        @if (!string.IsNullOrEmpty(car.DetailedAddress))
+                                        {
+                                            <span> - @car.DetailedAddress</span>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <span>Không có thông tin địa chỉ</span>
+                                    }
+                                </p>
+                            </div>
+                            <div class="col-md-3 d-flex flex-column justify-content-between p-3 bg-light rounded-end-4">
+                                <div class="text-end">
+                                    <div class="form-check">
+                                        <input class="form-check-input compare-checkbox"
+                                               type="checkbox"
+                                               value="@car.Id"
+                                               id="compare_list_@car.Id"
+                                               data-car-id="@car.Id"
+                                               data-car-name="@car.Name"
+                                               data-car-image="@(car.CarImages.FirstOrDefault(ci => ci.IsMainImage)?.ImageUrl ?? "/images/car-placeholder.png")">
+                                        <label class="form-check-label" for="compare_list_@car.Id">
+                                            So sánh
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <div class="d-flex justify-content-end mb-3">
+                                        <div class="text-end">
+                                            <div class="fs-4 fw-bold text-success">@car.PricePerDay.ToString("N0") VNĐ</div>
+                                            <div class="small text-muted">một ngày</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="d-grid gap-2">
+                                        <a asp-area="Customer" asp-page="/Rentals/Create" asp-route-carId="@car.Id" class="btn btn-success">
+                                            <i class="bi bi-calendar-plus me-1"></i> Thuê ngay
+                                        </a>
+                                        <a asp-area="Customer" asp-page="/Cars/Details" asp-route-id="@car.Id" class="btn btn-outline-primary">
+                                            <i class="bi bi-eye me-1"></i> Chi tiết
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- No results message -->
+    @if (!Model.Cars.Any())
+    {
+        <div class="card border-0 shadow-sm rounded-4 text-center p-5 mt-4">
+            <div class="py-5">
+                <i class="bi bi-car-front display-1 text-secondary opacity-50"></i>
+                <h4 class="mt-4 fw-bold">Không tìm thấy xe nào</h4>
+                <p class="text-muted mb-4">Vui lòng thử với tiêu chí tìm kiếm khác hoặc liên hệ với chúng tôi để được hỗ trợ.</p>
+                <div class="d-flex justify-content-center gap-3">
+                    <a asp-area="Customer" asp-page="/Index" class="btn btn-primary rounded-pill px-4 py-2">
+                        <i class="bi bi-house-door me-2"></i> Quay về trang chủ
+                    </a>
+                    <button type="button" class="btn btn-outline-primary rounded-pill px-4 py-2" onclick="clearAllFilters()">
+                        <i class="bi bi-x-circle me-2"></i> Xóa bộ lọc
+                    </button>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Pagination -->
+    @if (Model.TotalPages > 1)
+    {
+        <nav aria-label="Phân trang" class="my-4">
+            <ul class="pagination pagination-lg justify-content-center">
+                <a class="page-link" asp-page="/Cars/Index" asp-route-currentPage="@(Model.CurrentPage - 1)"
+                   asp-route-brandId="@Model.BrandId" asp-route-categoryId="@Model.CategoryId"
+                   asp-route-priceRange="@Model.PriceRange" asp-route-serviceType="@Model.ServiceType"
+                   asp-route-rentalType="@Model.RentalType"
+                   asp-route-sortBy="@Model.SortBy" aria-label="Trang trước">
+                    <i class="bi bi-chevron-left"></i>
+                </a>
+
+                @{
+                    var startPage = Math.Max(1, Model.CurrentPage - 2);
+                    var endPage = Math.Min(Model.TotalPages, startPage + 4);
+                    startPage = Math.Max(1, endPage - 4);
+                }
+
+                @if (startPage > 1)
+                {
+                    <li class="page-item">
+                        <a class="page-link" asp-page="/Cars/Index" asp-route-currentPage="1"
+                           asp-route-brandId="@Model.BrandId" asp-route-categoryId="@Model.CategoryId"
+                           asp-route-priceRange="@Model.PriceRange" asp-route-serviceType="@Model.ServiceType"
+                           asp-route-rentalType="@Model.RentalType"
+                           asp-route-sortBy="@Model.SortBy">1</a>
+                    </li>
+                    @if (startPage > 2)
+                    {
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                    }
+                }
+
+                @for (int i = startPage; i <= endPage; i++)
+                {
+                    <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                        <a class="page-link" asp-page="/Cars/Index" asp-route-currentPage="@i"
+                           asp-route-brandId="@Model.BrandId" asp-route-categoryId="@Model.CategoryId"
+                           asp-route-priceRange="@Model.PriceRange" asp-route-serviceType="@Model.ServiceType"
+                           asp-route-rentalType="@Model.RentalType"
+                           asp-route-sortBy="@Model.SortBy">@i</a>
+                    </li>
+                }
+
+                @if (endPage < Model.TotalPages)
+                {
+                    @if (endPage < Model.TotalPages - 1)
+                    {
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                    }
+                    <li class="page-item">
+                        <a class="page-link" asp-page="/Cars/Index" asp-route-currentPage="@Model.TotalPages"
+                           asp-route-brandId="@Model.BrandId" asp-route-categoryId="@Model.CategoryId"
+                           asp-route-priceRange="@Model.PriceRange" asp-route-serviceType="@Model.ServiceType"
+                           asp-route-rentalType="@Model.RentalType"
+                           asp-route-sortBy="@Model.SortBy">@Model.TotalPages</a>
+                    </li>
+                }
+
+                <li class="page-item @(Model.CurrentPage == Model.TotalPages ? "disabled" : "")">
+                    <a class="page-link" asp-page="/Cars/Index" asp-route-currentPage="@(Model.CurrentPage + 1)"
+                       asp-route-brandId="@Model.BrandId" asp-route-categoryId="@Model.CategoryId"
+                       asp-route-priceRange="@Model.PriceRange" asp-route-serviceType="@Model.ServiceType"
+                       asp-route-rentalType="@Model.RentalType"
+                       asp-route-sortBy="@Model.SortBy" aria-label="Trang sau">
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    }
+
+    <!-- Trust Badges -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-body p-4">
+            <div class="row g-4 text-center">
+                <div class="col-md-3">
+                    <div class="d-flex flex-column align-items-center">
+                        <i class="bi bi-shield-check text-success fs-1 mb-2"></i>
+                        <h5 class="fw-bold">Đảm bảo an toàn</h5>
+                        <p class="text-muted small mb-0">Tất cả xe được kiểm định chất lượng</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="d-flex flex-column align-items-center">
+                        <i class="bi bi-currency-exchange text-success fs-1 mb-2"></i>
+                        <h5 class="fw-bold">Không phí ẩn</h5>
+                        <p class="text-muted small mb-0">Giá niêm yết là giá cuối cùng</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="d-flex flex-column align-items-center">
+                        <i class="bi bi-headset text-success fs-1 mb-2"></i>
+                        <h5 class="fw-bold">Hỗ trợ 24/7</h5>
+                        <p class="text-muted small mb-0">Đội ngũ hỗ trợ luôn sẵn sàng giúp đỡ</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="d-flex flex-column align-items-center">
+                        <i class="bi bi-clock-history text-success fs-1 mb-2"></i>
+                        <h5 class="fw-bold">Dễ dàng đặt & hủy</h5>
+                        <p class="text-muted small mb-0">Đặt xe nhanh chóng, hủy miễn phí</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Compare Modal -->
+<div class="modal fade" id="compareModal" tabindex="-1" aria-labelledby="compareModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content rounded-4">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold" id="compareModalLabel">So sánh xe</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="compareModalContent">
+                <!-- Compare content will be inserted here dynamically -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Car card styles */
+    .car-card {
+        transition: all 0.3s ease;
+        overflow: hidden;
+    }
+
+        .car-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12) !important;
+        }
+
+    .car-img {
+        height: 220px;
+        object-fit: cover;
+        transition: transform 0.6s;
+    }
+
+    .car-card:hover .car-img {
+        transform: scale(1.05);
+    }
+
+    /* Car overlay */
+    .car-overlay {
+        position: absolute;
+        bottom: -60px;
+        left: 0;
+        right: 0;
+        background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+        padding: 20px;
+        display: flex;
+        justify-content: center;
+        transition: all 0.3s ease;
+        opacity: 0;
+        z-index: 2;
+    }
+
+    .car-card:hover .car-overlay {
+        bottom: 0;
+        opacity: 1;
+    }
+
+    /* Pagination */
+    .page-link {
+        border-radius: 50%;
+        margin: 0 3px;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .badge {
+        font-weight: 500;
+    }
+
+    /* Image indicators */
+    .image-indicators {
+        position: absolute;
+        bottom: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 5px;
+    }
+
+    .image-indicator {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background-color: rgba(255, 255, 255, 0.5);
+        display: inline-block;
+    }
+
+        .image-indicator.active {
+            background-color: white;
+            width: 8px;
+            height: 8px;
+        }
+
+    /* Ribbon style */
+    .ribbon {
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    /* Price tag */
+    .price-tag {
+        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        border-radius: 6px;
+        overflow: hidden;
+    }
+
+    /* Quick filter active state */
+    .quick-filter.active {
+        background-color: #0d6efd;
+        color: white;
+    }
+
+    /* Hover effect for list items */
+    #carsListView .list-group-item {
+        transition: all 0.3s ease;
+    }
+
+        #carsListView .list-group-item:hover {
+            transform: translateX(5px);
+            background-color: #f8f9fa;
+        }
+
+    /* Car Image Wrapper */
+    .car-image-wrapper {
+        position: relative;
+        height: 220px;
+        overflow: hidden;
+        background-color: #f8f9fa;
+    }
+
+    /* Save car button styles */
+    .save-car {
+        width: 40px;
+        height: 40px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .save-car.active .bi-bookmark {
+            display: none;
+        }
+
+        .save-car:not(.active) .bi-bookmark-fill {
+            display: none;
+        }
+
+    /* Animation for saved items */
+    @@keyframes heartBeat {
+        0%
+
+    {
+        transform: scale(1);
+    }
+
+    14% {
+        transform: scale(1.3);
+    }
+
+    28% {
+        transform: scale(1);
+    }
+
+    42% {
+        transform: scale(1.3);
+    }
+
+    70% {
+        transform: scale(1);
+    }
+
+    }
+
+    .heart-beat {
+        animation: heartBeat 1s;
+    }
+
+    /* Make z-index priority for form elements */
+    .form-check-input {
+        z-index: 3;
+        cursor: pointer;
+    }
+
+    /* CSS for flash deals section */
+    .countdown {
+        font-weight: bold;
+    }
+
+    /* Z-index layers */
+    .z-2 {
+        z-index: 2;
+    }
+</style>
+
+@section Scripts {
+    <script>
+        // Array to store selected car IDs - GLOBAL
+        const selectedCars = [];
+        const maxCars = 4;
+
+        $(document).ready(function() {
+            // Event handler for compare checkboxes
+            $('.compare-checkbox').on('change', function() {
+                const carId = $(this).data('car-id');
+                const carName = $(this).data('car-name');
+                const carImage = $(this).data('car-image');
+
+                if(this.checked) {
+                    // Check if we already have max cars
+                    if (selectedCars.length >= maxCars) {
+                        alert(`Bạn chỉ có thể so sánh tối đa ${maxCars} xe cùng lúc.`);
+                        this.checked = false;
+                        return;
+                    }
+
+                    // Add car to comparison
+                    selectedCars.push(carId);
+                    addCarToComparisonBar(carId, carName, carImage);
+                } else {
+                    // Remove car from comparison
+                    const index = selectedCars.indexOf(carId);
+                    if (index !== -1) {
+                        selectedCars.splice(index, 1);
+                        removeCarFromComparisonBar(carId);
+                    }
+                }
+
+                updateComparisonBar();
+
+                // Update all checkboxes with the same car ID to keep grid and list view in sync
+                $(`.compare-checkbox[data-car-id="${carId}"]`).prop('checked', this.checked);
+            });
+
+            // Event handler for compare button
+            $('#compareButton').on('click', function() {
+                if (selectedCars.length > 0) {
+                    window.location.href = `/Customer/Cars/Compare?ids=${selectedCars.join(',')}`;
+                }
+            });
+
+            // Event handler for clear button
+            $('#clearComparisonButton').on('click', function() {
+                clearComparison();
+            });
+        });
+
+        function addCarToComparisonBar(carId, carName, carImage) {
+            const carItem = `
+                <div class="car-compare-item me-3 mb-2" id="compare-item-${carId}">
+                    <div class="d-flex align-items-center bg-white text-dark rounded p-2">
+                        <img src="${carImage}" alt="${carName}" class="me-2" style="width: 40px; height: 40px; object-fit: cover;">
+                        <span class="me-2">${carName}</span>
+                        <button type="button" class="btn-close" onclick="removeCarFromSelection(${carId})"></button>
+                    </div>
+                </div>
+            `;
+
+            $('#comparisonItems').append(carItem);
+        }
+
+        function removeCarFromComparisonBar(carId) {
+            $(`#compare-item-${carId}`).remove();
+        }
+
+        function removeCarFromSelection(carId) {
+            // Uncheck all checkboxes with this car ID
+            $(`.compare-checkbox[data-car-id="${carId}"]`).prop('checked', false);
+
+            // Remove from array
+            const index = selectedCars.indexOf(carId);
+            if (index !== -1) {
+                selectedCars.splice(index, 1);
+            }
+
+            // Remove from UI
+            removeCarFromComparisonBar(carId);
+
+            // Update comparison bar
+            updateComparisonBar();
+        }
+
+        function updateComparisonBar() {
+            const count = selectedCars.length;
+
+            // Update counter
+            $('#comparisonCounter').text(`${count} xe được chọn`);
+
+            // Show/hide comparison bar
+            if (count > 0) {
+                $('#comparisonBar').show();
+                $('#compareButton').prop('disabled', count < 2);
+            } else {
+                $('#comparisonBar').hide();
+            }
+        }
+
+        function clearComparison() {
+            // Uncheck all checkboxes
+            $('.compare-checkbox').prop('checked', false);
+
+            // Clear selected cars array
+            selectedCars.length = 0;
+
+            // Clear UI
+            $('#comparisonItems').empty();
+
+            // Update comparison bar
+            updateComparisonBar();
+        }
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animation for cards
+            const cards = document.querySelectorAll('.car-card');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    card.style.transition = 'all 0.5s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, 100 * index);
+            });
+
+            // Toggle view between grid and list
+            const gridView = document.getElementById('carsGridView');
+            const listView = document.getElementById('carsListView');
+            const gridButton = document.getElementById('viewToggleGrid');
+            const listButton = document.getElementById('viewToggleList');
+
+            // Kiểm tra xem các phần tử có tồn tại không
+            if (gridView && listView && gridButton && listButton) {
+                gridButton.addEventListener('click', function() {
+                    console.log('Grid view clicked');
+                    gridView.classList.remove('d-none');
+                    listView.classList.add('d-none');
+                    gridButton.classList.add('active');
+                    listButton.classList.remove('active');
+                });
+
+                listButton.addEventListener('click', function() {
+                    console.log('List view clicked');
+                    gridView.classList.add('d-none');
+                    listView.classList.remove('d-none');
+                    gridButton.classList.remove('active');
+                    listButton.classList.add('active');
+                });
+            } else {
+                console.error('Some elements for view toggling are missing');
+            }
+
+            const hiddenFeatures = document.getElementById('hiddenFeatures');
+
+            // Kiểm tra các phần tử cần thiết có tồn tại không
+            if (!filterForm || !hiddenFeatures) {
+                console.error('Filter form or hiddenFeatures not found');
+                return;
+            }
+
+            // Khởi tạo danh sách tính năng đã chọn
+            let selectedFeatures = hiddenFeatures.value ?
+                hiddenFeatures.value.split(',').filter(f => f.trim() !== '') :
+                [];
+
+            // Function to toggle feature filters - ĐỊNH NGHĨA CHÍNH XÁC MỘT LẦN DUY NHẤT
+            window.toggleFeatureFilter = function(featureCode) {
+                console.log('Toggle feature:', featureCode);
+
+                if (!featureCode) {
+                    console.error('Feature code is empty');
+                    return;
+                }
+
+                const index = selectedFeatures.indexOf(featureCode);
+
+                if (index === -1) {
+                    // Add feature to filter
+                    selectedFeatures.push(featureCode);
+                    console.log('Added feature:', featureCode);
+                } else {
+                    // Remove feature from filter
+                    selectedFeatures.splice(index, 1);
+                    console.log('Removed feature:', featureCode);
+                }
+
+                // Update hidden field
+                hiddenFeatures.value = selectedFeatures.filter(f => f.trim() !== '').join(',');
+                console.log('Updated features:', hiddenFeatures.value);
+
+                // Submit form
+                filterForm.submit();
+            };
+
+            // XÓA BỎ phần handle compare checkboxes ở đây để tránh xung đột
+
+            // Handle save car buttons
+            const saveButtons = document.querySelectorAll('.save-car');
+            if (saveButtons.length > 0) {
+                saveButtons.forEach(button => {
+                    button.addEventListener('click', function() {
+                        this.classList.toggle('active');
+
+                        if (this.classList.contains('active')) {
+                            // Change icon to filled bookmark
+                            this.innerHTML = '<i class="bi bi-bookmark-fill"></i>';
+                            this.classList.add('heart-beat');
+
+                            // Show toast notification
+                            // For demo purposes only:
+                            // toast('Đã lưu xe vào danh sách yêu thích!');
+                        } else {
+                            // Change back to outline bookmark
+                            this.innerHTML = '<i class="bi bi-bookmark"></i>';
+                        }
+                    });
+                });
+            }
+
+            // Function to clear all filters
+            window.clearAllFilters = function() {
+                console.log('Clearing all filters');
+                window.location = window.location.pathname;
+            };
+        });
+    </script>
+}
+
+
+
+
+

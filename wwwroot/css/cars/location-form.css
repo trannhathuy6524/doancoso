@@ -1,0 +1,139 @@
+﻿/* Styles cho phần nhập địa chỉ và vị trí */
+.location-section {
+    border: 1px solid #e0e0e0;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    background-color: #f8f9fa;
+    transition: all 0.3s ease;
+}
+
+    .location-section:hover {
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        border-color: #dee2e6;
+    }
+
+    .location-section.warning {
+        border-color: #ffc107;
+        animation: pulse 1s;
+    }
+
+    .location-section.error {
+        border-color: #dc3545;
+    }
+
+    .location-section.synced {
+        border-color: #28a745;
+    }
+
+.map-container {
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+    overflow: hidden;
+}
+
+.coordinates-display {
+    font-family: monospace;
+    background-color: #f1f3f5;
+    padding: 0.5rem;
+    border-radius: 0.25rem;
+    margin-top: 0.5rem;
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.7);
+    }
+
+    70% {
+        box-shadow: 0 0 0 0.5rem rgba(255, 193, 7, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(255, 193, 7, 0);
+    }
+}
+
+.address-confirm-dialog {
+    animation: slideDown 0.3s forwards;
+}
+/* Styles cho phần dịch vụ tài xế */
+.form-switch .form-check-input {
+    width: 3em;
+    height: 1.5em;
+    cursor: pointer;
+}
+
+    .form-switch .form-check-input:checked {
+        background-color: #198754;
+        border-color: #198754;
+    }
+
+    .form-switch .form-check-input:focus {
+        box-shadow: 0 0 0 0.25rem rgba(25, 135, 84, 0.25);
+    }
+
+#driverServiceFees {
+    border-top: 1px solid #dee2e6;
+    padding-top: 1rem;
+    transition: all 0.3s ease-in-out;
+}
+
+/* Style cho hover card dịch vụ */
+.card:has(#offerDriverService):hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    transition: box-shadow 0.3s ease-in-out;
+}
+
+/* Style cho phần thông tin phí */
+.driver-fee-details {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-in-out;
+}
+
+    .driver-fee-details.show {
+        max-height: 500px;
+    }
+
+/* Hiệu ứng khi thay đổi giá trị */
+.price-highlight {
+    animation: pulse 1s;
+}
+
+@keyframes pulse {
+    0% {
+        background-color: rgba(25, 135, 84, 0.1);
+    }
+
+    100% {
+        background-color: transparent;
+    }
+}
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Tối ưu hiển thị trên thiết bị di động */
+@media (max-width: 768px) {
+    #map {
+        height: 250px !important;
+    }
+
+    .location-actions {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+        .location-actions button {
+            width: 100%;
+        }
+}

@@ -1,0 +1,56 @@
+﻿@model List<Car>
+
+@if (Model.Any())
+{
+    <div class="comparison-widget bg-light border p-3 mb-4 rounded">
+        <h5>
+            <i class="bi bi-bar-chart-fill me-2"></i>Xe đang so sánh (@Model.Count)
+        </h5>
+        <div class="d-flex flex-wrap mt-2">
+            @foreach (var car in Model)
+            {
+                <div class="car-item me-3 mb-2">
+                    <div class="d-flex align-items-center border bg-white rounded p-2">
+                        @if (car.CarImages != null && car.CarImages.Any())
+                        {
+                            var mainImage = car.CarImages.FirstOrDefault(ci => ci.IsMainImage) ?? car.CarImages.First();
+                            <img src="/@(mainImage.ImageUrl.TrimStart('/'))" class="me-2" style="width: 40px; height: 40px; object-fit: cover;" alt="@car.Name">
+                        }
+                        else
+                        {
+                            <img src="/images/car-placeholder.png" class="me-2" style="width: 40px; height: 40px; object-fit: cover;" alt="@car.Name">
+                        }
+                        <span class="small">@car.Name</span>
+                    </div>
+                </div>
+            }
+        </div>
+        <div class="d-flex mt-2">
+            <a href="/Customer/Cars/Compare?ids=@string.Join(",", Model.Select(c => c.Id))" class="btn btn-primary btn-sm me-2">
+                <i class="bi bi-bar-chart-fill me-1"></i>So sánh
+            </a>
+            <button id="clearComparisonBtn" class="btn btn-outline-danger btn-sm">
+                <i class="bi bi-x-circle me-1"></i>Xóa tất cả
+            </button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('clearComparisonBtn').addEventListener('click', function() {
+                fetch('/api/ComparisonAPI/clear', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if(data.success) {
+                        location.reload();
+                    }
+                });
+            });
+        });
+    </script>
+}

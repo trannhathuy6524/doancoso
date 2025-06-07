@@ -1,0 +1,278 @@
+﻿@page
+@model GotoCarRental.Areas.Customer.Pages.IndexModel
+@{
+    ViewData["Title"] = "Trang chủ";
+}
+
+<!-- Hero section -->
+<section class="py-5 text-center bg-light">
+    <div class="container">
+        <h1 class="display-4 fw-bold">Thuê xe dễ dàng, giá tốt nhất</h1>
+        <p class="lead mb-4">Hơn 1000+ xe sẵn sàng phục vụ nhu cầu di chuyển của bạn</p>
+        
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <form method="get" action="/Customer/Cars/Search" class="p-3 bg-white shadow-sm rounded">
+                    <div class="input-group">
+                        <input type="text" name="SearchTerm" class="form-control form-control-lg" placeholder="Tìm kiếm xe...">
+                        <button class="btn btn-primary btn-lg" type="submit">
+                            <i class="bi bi-search"></i> Tìm kiếm
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Nearby Cars Promo Section - THÊM ĐOẠN NÀY VÀO ĐÂY -->
+<section class="py-4">
+    <div class="container">
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h4>Tìm xe gần vị trí của bạn</h4>
+                        <p>Tìm và thuê xe ngay gần vị trí của bạn để tiết kiệm thời gian di chuyển.</p>
+                    </div>
+                    <div class="col-md-4 text-center">
+                        <a asp-area="Customer" asp-page="/Cars/NearbyCars" class="btn btn-primary">
+                            <i class="bi bi-geo-alt me-2"></i>Tìm xe gần đây
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Cars Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Xe nổi bật</h2>
+            <a href="/Customer/Cars/Index" class="btn btn-outline-primary">
+                Xem tất cả <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+        
+        <div class="row row-cols-1 row-cols-md-4 g-4">
+            @foreach (var car in Model.FeaturedCars)
+            {
+                <div class="col">
+                    <div class="card h-100 shadow-sm">
+                        <div class="position-relative">
+                            @if (car.CarImages != null && car.CarImages.Any())
+                            {
+                                var mainImage = car.CarImages.FirstOrDefault(ci => ci.IsMainImage) ?? car.CarImages.First();
+                                <img src="/@(mainImage.ImageUrl.TrimStart('/'))" class="card-img-top" alt="@car.Name" style="height: 200px; object-fit: cover;">
+                            }
+                            else
+                            {
+                                <img src="/images/car-placeholder.png" class="card-img-top" alt="@car.Name" style="height: 200px; object-fit: cover;">
+                            }
+                            <span class="position-absolute top-0 end-0 m-2 badge bg-success">@car.PricePerDay.ToString("N0") VNĐ/ngày</span>
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title">@car.Name</h5>
+                            <p class="card-text text-muted mb-1">
+                                <i class="bi bi-tag"></i> @car.Brand?.Name
+                                <span class="mx-2">|</span>
+                                <i class="bi bi-car-front"></i> @car.Category?.Name
+                            </p>
+                            <p class="card-text">
+                                @if (car.CarFeatures != null && car.CarFeatures.Any(cf => cf.Feature != null))
+                                {
+                                    var features = car.CarFeatures.Where(cf => cf.Feature != null).Take(3).Select(cf => cf.Feature.Name);
+                                    <small class="text-muted">
+                                        <i class="bi bi-gear"></i> @string.Join(", ", features)
+                                        @if (car.CarFeatures.Count() > 3)
+                                        {
+                                            <span>...</span>
+                                        }
+                                    </small>
+                                }
+                            </p>
+                        </div>
+                        <div class="card-footer d-grid">
+                            <a asp-area="Customer" asp-page="/Cars/Details" asp-route-id="@car.Id" class="btn btn-primary">
+                                <i class="bi bi-eye me-2"></i> Xem chi tiết
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+<!-- Browse by Category -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <h2 class="mb-4">Duyệt theo loại xe</h2>
+        <div class="row row-cols-2 row-cols-md-4 g-4">
+            @foreach (var category in Model.Categories)
+            {
+                <div class="col">
+                    <a href="/Customer/Cars/Search?CategoryId=@category.Id" class="text-decoration-none">
+                        <div class="card h-100 shadow-sm text-center hover-card">
+                            <div class="card-body py-4">
+                                <i class="bi bi-car-front display-4 mb-3 text-primary"></i>
+                                <h5 class="card-title">@category.Name</h5>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+<!-- Popular Features -->
+<section class="py-5">
+    <div class="container">
+        <h2 class="mb-4">Tính năng phổ biến</h2>
+        <div class="row row-cols-2 row-cols-md-4 g-4">
+            @foreach (var feature in Model.PopularFeatures.Take(8))
+            {
+                <div class="col">
+                    <a asp-area="Customer" asp-page="/Features/Cars" asp-route-id="@feature.Id" class="text-decoration-none">
+                        <div class="card h-100 shadow-sm hover-card">
+                            <div class="card-body p-4">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-gear-fill fs-3 text-primary me-3"></i>
+                                    <h5 class="card-title mb-0">@feature.Name</h5>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            }
+        </div>
+        <div class="text-center mt-4">
+            <a asp-area="Customer" asp-page="/Features/Index" class="btn btn-outline-primary">
+                Xem tất cả tính năng <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Popular Brands -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <h2 class="mb-4">Hãng xe phổ biến</h2>
+        <div class="row row-cols-2 row-cols-md-6 g-4">
+            @foreach (var brand in Model.PopularBrands)
+            {
+                <div class="col">
+                    <a href="/Customer/Cars/Search?BrandId=@brand.Id" class="text-decoration-none">
+                        <div class="card h-100 shadow-sm text-center hover-card">
+                            <div class="card-body py-4">
+                                <h5 class="card-title">@brand.Name</h5>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+<!-- How it works -->
+<section class="py-5">
+    <div class="container">
+        <h2 class="text-center mb-5">Cách thức hoạt động</h2>
+        <div class="row g-4">
+            <div class="col-md-4 text-center">
+                <div class="p-3">
+                    <div class="bg-primary bg-opacity-10 p-3 rounded-circle d-inline-block mb-3">
+                        <i class="bi bi-search fs-1 text-primary"></i>
+                    </div>
+                    <h4>Tìm xe phù hợp</h4>
+                    <p>Tìm kiếm và lọc xe theo các tính năng, hãng xe và loại xe phù hợp với nhu cầu của bạn.</p>
+                </div>
+            </div>
+            <div class="col-md-4 text-center">
+                <div class="p-3">
+                    <div class="bg-primary bg-opacity-10 p-3 rounded-circle d-inline-block mb-3">
+                        <i class="bi bi-calendar-check fs-1 text-primary"></i>
+                    </div>
+                    <h4>Đặt xe</h4>
+                    <p>Chọn ngày thuê, thời gian và hoàn tất thanh toán một cách nhanh chóng, tiện lợi.</p>
+                </div>
+            </div>
+            <div class="col-md-4 text-center">
+                <div class="p-3">
+                    <div class="bg-primary bg-opacity-10 p-3 rounded-circle d-inline-block mb-3">
+                        <i class="bi bi-car-front fs-1 text-primary"></i>
+                    </div>
+                    <h4>Nhận xe</h4>
+                    <p>Nhận xe tại địa điểm đã chọn và bắt đầu hành trình của bạn với chiếc xe ưng ý.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Top rated cars -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <h2 class="mb-4">Xe được đánh giá cao</h2>
+        <div class="row g-4">
+            @foreach (var car in Model.TopRatedCars)
+            {
+                <div class="col-md-3">
+                    <div class="card h-100 shadow-sm">
+                        <div class="position-relative">
+                            @if (car.CarImages != null && car.CarImages.Any())
+                            {
+                                var mainImage = car.CarImages.FirstOrDefault(ci => ci.IsMainImage) ?? car.CarImages.First();
+                                <img src="/@(mainImage.ImageUrl.TrimStart('/'))" class="card-img-top" alt="@car.Name" style="height: 180px; object-fit: cover;">
+                            }
+                            else
+                            {
+                                <img src="/images/car-placeholder.png" class="card-img-top" alt="@car.Name" style="height: 180px; object-fit: cover;">
+                            }
+
+                            <!-- Rating badge -->
+                            <div class="position-absolute top-0 end-0 m-2">
+                                <span class="badge bg-warning text-dark">
+                                    <i class="bi bi-star-fill me-1"></i>
+                                    @(car.Reviews.Any() ? car.Reviews.Average(r => r.Rating).ToString("0.0") : "0.0")
+                                </span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title">@car.Name</h5>
+                            <p class="card-text text-muted mb-2">
+                                <small>
+                                    <i class="bi bi-tag me-1"></i> @car.Brand?.Name
+                                    <span class="mx-1">|</span>
+                                    <i class="bi bi-car-front me-1"></i> @car.Category?.Name
+                                </small>
+                            </p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-success fw-bold">@car.PricePerDay.ToString("N0") VNĐ/ngày</span>
+                                <a asp-area="Customer" asp-page="/Cars/Details" asp-route-id="@car.Id" class="btn btn-sm btn-outline-primary">
+                                    Chi tiết
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+
+<style>
+    .hover-card {
+        transition: all 0.3s ease;
+    }
+    
+    .hover-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+    }
+</style>

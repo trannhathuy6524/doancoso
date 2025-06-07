@@ -1,0 +1,110 @@
+﻿@page
+@model GotoCarRental.Areas.Admin.Pages.Settings.CommissionModel
+@{
+    ViewData["Title"] = "Cài đặt phí hoa hồng";
+}
+
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="display-6 fw-bold">Cài đặt phí hoa hồng</h1>
+            <p class="text-muted">Quản lý tỷ lệ hoa hồng áp dụng cho các đơn thuê xe</p>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show mb-4">
+            <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light py-3">
+                    <h5 class="mb-0">Thiết lập tỷ lệ hoa hồng</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        <div class="mb-4">
+                            <label asp-for="DefaultCommissionRate" class="form-label">Tỷ lệ hoa hồng mặc định (%)</label>
+                            <div class="input-group">
+                                <input asp-for="DefaultCommissionRate" type="number" min="0" max="100" step="0.1" class="form-control" required />
+                                <span class="input-group-text">%</span>
+                            </div>
+                            <span asp-validation-for="DefaultCommissionRate" class="text-danger"></span>
+                            <div class="form-text">
+                                Đây là tỷ lệ phần trăm mặc định được áp dụng cho tất cả các đơn thuê xe mới.
+                            </div>
+                        </div>
+
+                        <hr class="my-4" />
+
+                        <div class="mb-3">
+                            <h5>Tỷ lệ phí theo loại xe</h5>
+                            <p class="text-muted">Thiết lập tỷ lệ hoa hồng riêng cho từng loại xe</p>
+
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Loại xe</th>
+                                            <th style="width: 200px;">Tỷ lệ hoa hồng (%)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @for (int i = 0; i < Model.CategoryCommissionRates.Count; i++)
+                                        {
+                                            <tr>
+                                                <td>
+                                                    @Model.CategoryCommissionRates[i].CategoryName
+                                                    <input type="hidden" asp-for="CategoryCommissionRates[i].CategoryId" />
+                                                    <input type="hidden" asp-for="CategoryCommissionRates[i].CategoryName" />
+                                                </td>
+                                                <td>
+                                                    <div class="input-group">
+                                                        <input asp-for="CategoryCommissionRates[i].CommissionRate" type="number" min="0" max="100" step="0.1" class="form-control" />
+                                                        <span class="input-group-text">%</span>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save me-2"></i> Lưu cài đặt
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light py-3">
+                    <h5 class="mb-0">Thông tin</h5>
+                </div>
+                <div class="card-body">
+                    <p>Hướng dẫn thiết lập phí hoa hồng:</p>
+                    <ul>
+                        <li>Tỷ lệ hoa hồng được tính theo % trên tổng giá trị đơn hàng</li>
+                        <li>Tỷ lệ mặc định sẽ được áp dụng khi không có tỷ lệ riêng cho loại xe</li>
+                        <li>Phí hoa hồng sẽ được tính tự động khi đơn hàng chuyển sang trạng thái hoàn thành</li>
+                        <li>Số tiền hoa hồng = Tổng giá đơn hàng × Tỷ lệ hoa hồng / 100</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

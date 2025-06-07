@@ -1,0 +1,274 @@
+﻿@page "{id}"
+@model GotoCarRental.Areas.Admin.Pages.Users.DetailsModel
+@{
+    ViewData["Title"] = $"Thông tin người dùng: {Model.AppUser.FullName ?? Model.AppUser.UserName}";
+}
+
+<div class="container py-4">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-area="Admin" asp-page="/Index">Trang chủ</a></li>
+            <li class="breadcrumb-item"><a asp-area="Admin" asp-page="/Users/Index">Quản lý người dùng</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Chi tiết người dùng</li>
+        </ol>
+    </nav>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+            <i class="bi bi-check-circle me-2"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="row">
+        <!-- Thông tin người dùng -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Thông tin người dùng</h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <div class="bg-light rounded-circle p-3 mx-auto d-inline-block mb-3">
+                            <i class="bi bi-person-circle display-5 text-primary"></i>
+                        </div>
+                        <h5 class="fw-bold">@(Model.AppUser.FullName ?? "Chưa cập nhật")</h5>
+                        <p class="text-muted mb-0">@Model.AppUser.Email</p>
+                    </div>
+
+                    <hr>
+
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between px-0">
+                            <span>Loại tài khoản:</span>
+                            <span class="fw-bold">
+                                @switch (Model.AppUser.UserType)
+                                {
+                                    case "Admin":
+                                        <span class="badge bg-danger">Admin</span>
+                                        break;
+                                    case "Manager":
+                                        <span class="badge bg-primary">Quản lý</span>
+                                        break;
+                                    case "CarOwner":
+                                        <span class="badge bg-success">Chủ xe</span>
+                                        break;
+                                    default:
+                                        <span class="badge bg-info">Khách hàng</span>
+                                        break;
+                                }
+                            </span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between px-0">
+                            <span>Trạng thái:</span>
+                            <span class="fw-bold">
+                                @if (Model.AppUser.IsApproved)
+                                {
+                                    <span class="badge bg-success">Đã phê duyệt</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning text-dark">Chờ phê duyệt</span>
+                                }
+                            </span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between px-0">
+                            <span>Số điện thoại:</span>
+                            <span class="fw-bold">
+                                @(string.IsNullOrEmpty(Model.AppUser.PhoneNumber) 
+                                    ? "Chưa cập nhật" 
+                                    : Model.AppUser.PhoneNumber)
+                            </span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between px-0">
+                            <span>Địa chỉ:</span>
+                            <span class="fw-bold">
+                                @(string.IsNullOrEmpty(Model.AppUser.Address) 
+                                    ? "Chưa cập nhật" 
+                                    : Model.AppUser.Address)
+                            </span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between px-0">
+                            <span>Ngày tạo:</span>
+                            <span class="fw-bold">@Model.AppUser.CreatedAt.ToString("dd/MM/yyyy HH:mm")</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between px-0">
+                            <span>Trạng thái tài khoản:</span>
+                            <span class="fw-bold">
+                                @if (Model.AppUser.LockoutEnd != null && Model.AppUser.LockoutEnd > DateTime.UtcNow)
+                                {
+                                    <span class="badge bg-danger">Đã bị vô hiệu hóa</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success">Đang hoạt động</span>
+                                }
+                            </span>
+                        </li>
+
+                        <!-- Thêm nút kích hoạt tài khoản nếu bị khóa -->
+                        @if (Model.AppUser.LockoutEnd != null && Model.AppUser.LockoutEnd > DateTime.UtcNow)
+                        {
+                            <form method="post" asp-page-handler="ActivateUser" asp-route-id="@Model.AppUser.Id" class="mt-2">
+                                <button type="submit" class="btn btn-success btn-sm w-100">
+                                    <i class="bi bi-check-circle me-2"></i>
+                                    <span>Kích hoạt lại tài khoản</span>
+                                </button>
+                            </form>
+                        }
+
+                    </ul>
+                </div>
+                <div class="card-footer bg-transparent">
+                    <div class="d-grid gap-2">
+                        <form method="post" asp-page-handler="ToggleApproval" asp-route-id="@Model.AppUser.Id">
+                            <button type="submit" class="btn @(Model.AppUser.IsApproved ? "btn-warning" : "btn-success") btn-sm w-100">
+                                @if (Model.AppUser.IsApproved)
+                                {
+                                    <i class="bi bi-x-circle me-2"></i>
+                                    <span>Hủy phê duyệt</span>
+                                }
+                                else
+                                {
+                                    <i class="bi bi-check-circle me-2"></i>
+                                    <span>Phê duyệt</span>
+                                }
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Quyền của người dùng</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.UserRoles.Any())
+                    {
+                        <div class="d-flex flex-wrap gap-2">
+                            @foreach (var role in Model.UserRoles)
+                            {
+                                <span class="badge bg-primary">@role</span>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted mb-0">Người dùng chưa được gán quyền</p>
+                    }
+                </div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Thống kê hoạt động</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6 border-end">
+                            <h3 class="fw-bold">@Model.UserCars.Count</h3>
+                            <p class="text-muted mb-0">Xe đã đăng</p>
+                        </div>
+                        <div class="col-6">
+                            <h3 class="fw-bold">@Model.TotalRentals</h3>
+                            <p class="text-muted mb-0">Đơn thuê</p>
+                        </div>
+                        <div class="col-12 mt-3">
+                            <h3 class="fw-bold">@Model.TotalReviews</h3>
+                            <p class="text-muted mb-0">Đánh giá</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Danh sách xe của người dùng -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Xe của người dùng</h5>
+                        <span class="badge bg-primary">@Model.UserCars.Count xe</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    @if (Model.UserCars.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Tên xe</th>
+                                        <th>Hãng</th>
+                                        <th>Giá</th>
+                                        <th>Trạng thái</th>
+                                        <th class="text-center">Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var car in Model.UserCars)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    @if (car.CarImages != null && car.CarImages.Any())
+                                                    {
+                                                        var mainImage = car.CarImages.FirstOrDefault(img => img.IsMainImage) ?? car.CarImages.First();
+                                                        <img src="/@(mainImage.ImageUrl.TrimStart('/'))" class="me-2 rounded" style="width: 40px; height: 40px; object-fit: cover;" />
+                                                    }
+                                                    else
+                                                    {
+                                                        <div class="bg-light rounded me-2" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                                                            <i class="bi bi-car-front text-muted"></i>
+                                                        </div>
+                                                    }
+                                                    @car.Name
+                                                </div>
+                                            </td>
+                                            <td>@car.Brand?.Name</td>
+                                            <td>@car.PricePerDay.ToString("N0") VNĐ</td>
+                                            <td>
+                                                @if (car.IsApproved)
+                                                {
+                                                    <span class="badge bg-success">Đã duyệt</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-warning text-dark">Chờ duyệt</span>
+                                                }
+                                                @if (!car.IsAvailable)
+                                                {
+                                                    <span class="badge bg-secondary ms-1">Không sẵn</span>
+                                                }
+                                            </td>
+                                            <td class="text-center">
+                                                <a asp-area="Admin" asp-page="/Cars/Details" asp-route-id="@car.Id" class="btn btn-sm btn-outline-primary">
+                                                    <i class="bi bi-eye"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <i class="bi bi-car-front display-4 text-muted"></i>
+                            <p class="lead mt-3">Người dùng chưa có xe nào</p>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Có thể thêm các thành phần khác ở đây, ví dụ lịch sử đơn thuê, đánh giá, v.v. -->
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+}

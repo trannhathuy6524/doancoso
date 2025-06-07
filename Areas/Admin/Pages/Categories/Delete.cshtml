@@ -1,0 +1,104 @@
+﻿@page "{id:int}"
+@model GotoCarRental.Areas.Admin.Pages.Categories.DeleteModel
+@{
+    ViewData["Title"] = "Xóa loại xe";
+}
+
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1">
+                    <li class="breadcrumb-item"><a asp-area="Admin" asp-page="/Index">Trang chủ</a></li>
+                    <li class="breadcrumb-item"><a asp-area="Admin" asp-page="/Categories/Index">Quản lý loại xe</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Xóa loại xe</li>
+                </ol>
+            </nav>
+            <h1 class="display-6 fw-bold">Xóa loại xe</h1>
+        </div>
+    </div>
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            @TempData["ErrorMessage"]
+        </div>
+    }
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">Xác nhận xóa</h5>
+                </div>
+                <div class="card-body">
+                    <p>Bạn có chắc chắn muốn xóa loại xe này không?</p>
+                    <p><strong>Tên loại:</strong> @Model.Category.Name</p>
+
+                    @if (Model.HasCars)
+                    {
+                        <div class="alert alert-warning" role="alert">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            <strong>Cảnh báo:</strong> Loại xe này đang có @Model.CarCount xe liên kết. 
+                            Bạn không thể xóa loại xe này cho đến khi tất cả xe liên quan được xóa hoặc chuyển sang loại khác.
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info" role="alert">
+                            <i class="bi bi-info-circle-fill me-2"></i>
+                            Loại xe này hiện không có xe nào liên kết. Bạn có thể xóa an toàn.
+                        </div>
+                    }
+
+                    <form method="post">
+                        <input type="hidden" asp-for="Category.Id" />
+                        <div class="d-flex justify-content-between mt-4">
+                            <a asp-page="./Index" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left me-1"></i> Quay lại
+                            </a>
+                            
+                            @if (!Model.HasCars)
+                            {
+                                <button type="submit" class="btn btn-danger">
+                                    <i class="bi bi-trash me-1"></i> Xóa
+                                </button>
+                            }
+                            else
+                            {
+                                <button type="submit" class="btn btn-danger" disabled>
+                                    <i class="bi bi-trash me-1"></i> Xóa
+                                </button>
+                            }
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Thông tin</h5>
+                </div>
+                <div class="card-body">
+                    <p>Bạn đang xóa loại xe <strong>@Model.Category.Name</strong>.</p>
+                    
+                    @if (Model.HasCars)
+                    {
+                        <p>Bạn cần chuyển hoặc xóa @Model.CarCount xe thuộc loại này trước khi xóa loại xe.</p>
+                        <hr />
+                        <a asp-page="./Cars" asp-route-id="@Model.Category.Id" class="btn btn-outline-primary w-100">
+                            <i class="bi bi-car-front me-1"></i> Quản lý các xe
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+}

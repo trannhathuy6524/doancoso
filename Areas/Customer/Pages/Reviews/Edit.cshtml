@@ -1,0 +1,95 @@
+﻿@page
+@model GotoCarRental.Areas.Customer.Pages.Reviews.EditModel
+@{
+    ViewData["Title"] = "Chỉnh sửa đánh giá";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Chỉnh sửa đánh giá xe @Model.Car.Name</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        <input type="hidden" asp-for="Review.Id" />
+                        <input type="hidden" asp-for="Review.CarId" />
+
+                        <div class="mb-4 text-center">
+                            <label class="form-label fw-bold">Đánh giá của bạn</label>
+                            <div class="rating-stars my-2">
+                                @for (int i = 5; i >= 1; i--)
+                                {
+                                    <input type="radio" id="star@i" name="Review.Rating" value="@i" @(i == Model.Review.Rating ? "checked" : "") />
+                                    <label for="star@i" title="@i sao">@i</label>
+                                }
+                            </div>
+                            <span class="text-danger" asp-validation-for="Review.Rating"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Review.Comment" class="form-label">Nhận xét</label>
+                            <textarea asp-for="Review.Comment" class="form-control" rows="4" placeholder="Chia sẻ trải nghiệm của bạn với chiếc xe này..."></textarea>
+                            <span class="text-danger" asp-validation-for="Review.Comment"></span>
+                        </div>
+
+                        <div class="d-flex justify-content-between gap-2 mt-4">
+                            <button type="submit" asp-page-handler="Delete" class="btn btn-outline-danger"
+                                    onclick="return confirm('Bạn có chắc chắn muốn xóa đánh giá này?')">
+                                <i class="bi bi-trash me-2"></i> Xóa đánh giá
+                            </button>
+                            
+                            <div class="d-flex gap-2">
+                                <a asp-area="Customer" asp-page="/Reviews/Index" class="btn btn-outline-secondary">
+                                    <i class="bi bi-x-circle me-2"></i> Hủy
+                                </a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-save me-2"></i> Lưu thay đổi
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .rating-stars {
+            display: flex;
+            flex-direction: row-reverse;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .rating-stars input {
+            display: none;
+        }
+
+        .rating-stars label {
+            cursor: pointer;
+            font-size: 2rem;
+            color: #ccc;
+            transition: color 0.2s;
+        }
+
+        .rating-stars input:checked ~ label {
+            color: #ffca08;
+        }
+
+        .rating-stars label:hover,
+        .rating-stars label:hover ~ label {
+            color: #ffca08;
+        }
+
+        .rating-stars input:checked + label:hover,
+        .rating-stars input:checked ~ label:hover,
+        .rating-stars label:hover ~ input:checked ~ label,
+        .rating-stars input:checked ~ label:hover ~ label {
+            color: #ffb908;
+        }
+    </style>
+}

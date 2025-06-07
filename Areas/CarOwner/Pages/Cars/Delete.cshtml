@@ -1,0 +1,178 @@
+﻿@page
+@model GotoCarRental.Areas.CarOwner.Pages.Cars.DeleteModel
+@{
+    ViewData["Title"] = "Xóa xe";
+}
+
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1">
+                    <li class="breadcrumb-item"><a asp-area="CarOwner" asp-page="/Index">Trang chủ</a></li>
+                    <li class="breadcrumb-item"><a asp-area="CarOwner" asp-page="/MyCars">Xe của tôi</a></li>
+                    <li class="breadcrumb-item"><a asp-area="CarOwner" asp-page="/Cars/Details" asp-route-id="@Model.Car.Id">@Model.Car.Name</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Xóa</li>
+                </ol>
+            </nav>
+            <h1 class="display-6 fw-bold text-danger">Xác nhận xóa xe</h1>
+        </div>
+    </div>
+
+    <!-- Hiển thị thông báo lỗi nếu có -->
+    @if (!ModelState.IsValid)
+    {
+        <div class="alert alert-danger">
+            <ul class="mb-0">
+                @foreach (var state in ViewContext.ModelState)
+                {
+                    @foreach (var error in state.Value.Errors)
+                    {
+                        <li>@error.ErrorMessage</li>
+                    }
+                }
+            </ul>
+        </div>
+    }
+    <div class="alert alert-warning">
+        <div class="d-flex">
+            <div class="me-3">
+                <i class="bi bi-exclamation-triangle-fill fs-2"></i>
+            </div>
+            <div>
+                <h4 class="alert-heading">Lưu ý quan trọng!</h4>
+                <p>
+                    <strong>Nếu xe đã có lịch sử cho thuê:</strong> Xe sẽ được đánh dấu là không khả dụng và ẩn khỏi tìm kiếm thay vì xóa hoàn toàn.
+                </p>
+                <p class="mb-0">
+                    <strong>Nếu xe chưa có lịch sử cho thuê:</strong> Xe và tất cả thông tin liên quan sẽ bị xóa vĩnh viễn.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="alert alert-danger">
+                        <div class="d-flex">
+                            <div class="me-3">
+                                <i class="bi bi-exclamation-triangle-fill fs-2"></i>
+                            </div>
+                            <div>
+                                <h4 class="alert-heading">Cảnh báo!</h4>
+                                <p class="mb-0">
+                                    Bạn đang xóa xe <strong>@Model.Car.Name</strong>. Hành động này không thể phục hồi.
+                                    Mọi dữ liệu liên quan đến xe này, bao gồm lịch sử thuê, đánh giá và hình ảnh sẽ bị xóa vĩnh viễn.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card mb-4">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">Thông tin xe sẽ bị xóa</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-4">
+                                <div class="col-md-4">
+                                    @if (Model.Car.CarImages != null && Model.Car.CarImages.Any())
+                                    {
+                                        <img src="/@(Model.Car.CarImages.FirstOrDefault()?.ImageUrl.TrimStart('/'))" 
+                                             class="img-fluid rounded" alt="@Model.Car.Name">
+                                    }
+                                    else
+                                    {
+                                        <div class="bg-light rounded p-4 text-center">
+                                            <i class="bi bi-card-image text-muted fs-1"></i>
+                                            <p class="mt-2 mb-0 text-muted">Không có ảnh</p>
+                                        </div>
+                                    }
+                                </div>
+                                <div class="col-md-8">
+                                    <h5 class="mb-3">@Model.Car.Name</h5>
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span>Hãng xe:</span>
+                                            <span>@Model.Car.Brand?.Name</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span>Loại xe:</span>
+                                            <span>@Model.Car.Category?.Name</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span>Giá thuê:</span>
+                                            <span class="fw-bold">@Model.Car.PricePerDay.ToString("N0") VNĐ/ngày</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span>Trạng thái:</span>
+                                            <div>
+                                                @if (Model.Car.IsApproved)
+                                                {
+                                                    <span class="badge bg-success me-1">Đã duyệt</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-warning text-dark me-1">Chờ duyệt</span>
+                                                }
+                                                
+                                                @if (Model.Car.IsAvailable)
+                                                {
+                                                    <span class="badge bg-success">Có sẵn</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-secondary">Không sẵn</span>
+                                                }
+                                            </div>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span>Ngày tạo:</span>
+                                            <span class="text-muted">@Model.Car.CreatedAt.ToString("dd/MM/yyyy")</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <form method="post">
+                        <input type="hidden" asp-for="Car.Id" />
+                        <div class="d-flex justify-content-end gap-2">
+                            <a asp-area="CarOwner" asp-page="/Cars/Details" asp-route-id="@Model.Car.Id" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left me-2"></i> Quay lại
+                            </a>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="bi bi-trash me-2"></i> Xác nhận xóa
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Lưu ý quan trọng</h5>
+                </div>
+                <div class="card-body">
+                    <p>Khi xóa xe, những thông tin sau sẽ bị xóa vĩnh viễn:</p>
+                    <ul>
+                        <li>Thông tin cơ bản của xe</li>
+                        <li>Tất cả hình ảnh của xe</li>
+                        <li>Đánh giá từ khách hàng</li>
+                        <li>Lịch sử cho thuê</li>
+                        <li>Tính năng xe</li>
+                    </ul>
+                    <hr>
+                    <p class="mb-0 text-danger">
+                        <i class="bi bi-exclamation-circle me-2"></i>
+                        Hành động này không thể phục hồi sau khi xác nhận.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

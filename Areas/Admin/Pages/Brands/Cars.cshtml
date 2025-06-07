@@ -1,0 +1,144 @@
+﻿@page "{id:int}"
+@model GotoCarRental.Areas.Admin.Pages.Brands.CarsModel
+@{
+    ViewData["Title"] = $"Danh sách xe - {Model.Brand.Name}";
+}
+
+<div class="container py-4">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-area="Admin" asp-page="/Index">Trang chủ</a></li>
+            <li class="breadcrumb-item"><a asp-area="Admin" asp-page="/Brands/Index">Quản lý hãng xe</a></li>
+            <li class="breadcrumb-item"><a asp-area="Admin" asp-page="/Brands/Details" asp-route-id="@Model.Brand.Id">@Model.Brand.Name</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Danh sách xe</li>
+        </ol>
+    </nav>
+
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="display-6 fw-bold">Xe thuộc hãng @Model.Brand.Name</h1>
+            <p class="text-muted">Tổng số: @Model.Cars.Count() xe</p>
+        </div>
+    </div>
+
+    <!-- Danh sách xe -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-light py-3">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h5 class="mb-0">Danh sách xe</h5>
+                </div>
+                <div class="col-md-6 text-end">
+                    <div class="btn-group">
+                        <a href="#" class="btn btn-sm btn-outline-secondary">Tất cả</a>
+                        <a href="#" class="btn btn-sm btn-outline-success">Đã duyệt</a>
+                        <a href="#" class="btn btn-sm btn-outline-warning">Chờ duyệt</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            @if (!Model.Cars.Any())
+            {
+                <div class="text-center py-5">
+                    <i class="bi bi-car-front display-1 text-muted mb-3"></i>
+                    <h4>Không có xe nào!</h4>
+                    <p class="mb-0">Hiện tại không có xe nào thuộc hãng @Model.Brand.Name.</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Tên xe</th>
+                                <th>Mô tả</th>
+                                <th>Loại xe</th>
+                                <th class="text-end">Giá thuê</th>
+                                <th>Chủ xe</th>
+                                <th class="text-center">Trạng thái</th>
+                                <th class="text-center">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var car in Model.Cars)
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            @if (car.CarImages != null && car.CarImages.Any())
+                                            {
+                                                var mainImage = car.CarImages.FirstOrDefault(i => i.IsMainImage) ?? car.CarImages.FirstOrDefault();
+                                                if (mainImage != null)
+                                                {
+                                                    <img src="/@(mainImage.ImageUrl.TrimStart('/'))" class="me-2 rounded"
+                                                         style="width: 40px; height: 40px; object-fit: cover;" />
+                                                }
+                                                else
+                                                {
+                                                    <div class="bg-light rounded me-2" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                                                        <i class="bi bi-car-front text-muted"></i>
+                                                    </div>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <div class="bg-light rounded me-2" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                                                    <i class="bi bi-car-front text-muted"></i>
+                                                </div>
+                                            }
+                                            @car.Name
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(car.Description) && car.Description.Length > 50)
+                                        {
+                                            @(car.Description.Substring(0, 50) + "...")
+                                        }
+                                        else
+                                        {
+                                            @car.Description
+                                        }
+                                    </td>
+                                    <td>@car.Category?.Name</td>
+                                    <td class="text-end">@car.PricePerDay.ToString("N0") VNĐ</td>
+                                    <td>@car.User?.FullName</td>
+                                    <td class="text-center">
+                                        @if (car.IsApproved)
+                                        {
+                                            <span class="badge bg-success">Đã duyệt</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-warning text-dark">Chờ duyệt</span>
+                                        }
+                                        
+                                        @if (!car.IsAvailable)
+                                        {
+                                            <span class="badge bg-secondary ms-1">Không sẵn</span>
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="btn-group btn-group-sm">
+                                            <a asp-area="Admin" asp-page="/Cars/Details" asp-route-id="@car.Id" class="btn btn-outline-primary" title="Chi tiết">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                            <a asp-area="Admin" asp-page="/Cars/Edit" asp-route-id="@car.Id" class="btn btn-outline-success" title="Sửa">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+}

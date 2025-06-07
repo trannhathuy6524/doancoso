@@ -1,0 +1,252 @@
+﻿@page
+@model GotoCarRental.Areas.Admin.Pages.Cars.IndexModel
+@{
+    ViewData["Title"] = "Quản lý xe";
+}
+
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="display-6 fw-bold">Quản lý xe</h1>
+            <p class="text-muted">Quản lý tất cả xe trong hệ thống</p>
+        </div>
+    </div>
+
+    <!-- Hiển thị thông báo -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Form lọc và tìm kiếm -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <div class="input-group">
+                        <input type="text" name="searchTerm" class="form-control" placeholder="Tìm kiếm xe..."
+                               value="@Model.SearchTerm">
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <select asp-for="BrandId" class="form-select">
+                        <option value="">-- Hãng xe --</option>
+                        @foreach (var brand in Model.Brands)
+                        {
+                            <option value="@brand.Id">@brand.Name</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select asp-for="CategoryId" class="form-select">
+                        <option value="">-- Loại xe --</option>
+                        @foreach (var category in Model.Categories)
+                        {
+                            <option value="@category.Id">@category.Name</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select asp-for="IsApproved" class="form-select">
+                        <option value="">-- Trạng thái phê duyệt --</option>
+                        <option value="true">Đã duyệt</option>
+                        <option value="false">Chờ duyệt</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-primary flex-grow-1" type="submit">
+                            <i class="bi bi-search"></i> Tìm kiếm
+                        </button>
+                        <a asp-page="./Index" class="btn btn-outline-secondary flex-grow-1">
+                            <i class="bi bi-x-circle"></i> Đặt lại
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Hiển thị danh sách xe -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-light py-3">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h5 class="mb-0">Danh sách xe</h5>
+                </div>
+                <div class="col-md-6 text-end">
+                    <span class="text-muted small">
+                        Hiển thị @((Model.PageNumber - 1) * Model.PageSize + 1) - @(Math.Min(Model.PageNumber * Model.PageSize, Model.TotalCount))
+                        của @Model.TotalCount xe
+                    </span>
+                </div>
+            </div>
+        </div>
+        
+        @if (!Model.Cars.Any())
+        {
+            <div class="card-body py-5 text-center">
+                <i class="bi bi-car-front display-1 text-muted mb-3"></i>
+                <h4>Không tìm thấy xe nào!</h4>
+                @if (!string.IsNullOrEmpty(Model.SearchTerm) || Model.BrandId.HasValue || Model.CategoryId.HasValue || Model.IsApproved.HasValue)
+                {
+                    <p class="mb-0">Không tìm thấy kết quả phù hợp với bộ lọc đã chọn.</p>
+                }
+                else
+                {
+                    <p class="mb-0">Chưa có xe nào trong hệ thống.</p>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-hover table-striped mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Ảnh</th>
+                            <th>Tên xe</th>
+                            <th>Hãng</th>
+                            <th>Loại</th>
+                            <th>Giá thuê/ngày</th>
+                            <th>Chủ xe</th>
+                            <th>Trạng thái</th>
+                            <th>Phê duyệt</th>
+                            <th class="text-center">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var car in Model.Cars)
+                        {
+                            <tr>
+                                <td style="width: 80px;">
+                                    @if (car.CarImages != null && car.CarImages.Any())
+                                    {
+                                        <img src="/@(car.CarImages.First().ImageUrl.TrimStart('/'))" class="img-thumbnail" alt="@car.Name" style="width: 70px; height: 50px; object-fit: cover;" />
+                                    }
+                                    else
+                                    {
+                                        <img src="/images/car-placeholder.png" class="img-thumbnail" alt="No image" style="width: 70px; height: 50px; object-fit: cover;" />
+                                    }
+                                </td>
+
+                                <td>@car.Name</td>
+                                <td>@(car.Brand?.Name ?? "Không xác định")</td>
+                                <td>@(car.Category?.Name ?? "Không xác định")</td>
+
+                                <td>@car.PricePerDay.ToString("N0") VNĐ</td>
+                                <td>@(car.User?.FullName ?? "Không có chủ xe")</td>
+
+                                <td>
+                                    @if (car.IsAvailable)
+                                    {
+                                        <form method="post" asp-page-handler="ToggleAvailability" asp-route-id="@car.Id" class="d-inline">
+                                            <button type="submit" class="badge bg-success border-0" style="cursor: pointer;">
+                                                Có sẵn
+                                            </button>
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <form method="post" asp-page-handler="ToggleAvailability" asp-route-id="@car.Id" class="d-inline">
+                                            <button type="submit" class="badge bg-secondary border-0" style="cursor: pointer;">
+                                                Không sẵn
+                                            </button>
+                                        </form>
+                                    }
+                                </td>
+                                <td>
+                                    @if (car.IsApproved)
+                                    {
+                                        <span class="badge bg-success">Đã duyệt</span>
+                                    }
+                                    else
+                                    {
+                                        <form method="post" asp-page-handler="ApproveCar" asp-route-id="@car.Id" class="d-inline">
+                                            <button type="submit" class="badge bg-warning text-dark border-0" style="cursor: pointer;">
+                                                Chờ duyệt
+                                            </button>
+                                        </form>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    <div class="btn-group btn-group-sm">
+                                        <a asp-page="./Details" asp-route-id="@car.Id" class="btn btn-outline-info" title="Chi tiết">
+                                            <i class="bi bi-info-circle"></i>
+                                        </a>
+                                        <a asp-page="./Edit" asp-route-id="@car.Id" class="btn btn-outline-primary" title="Sửa">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <a asp-page="./Delete" asp-route-id="@car.Id" class="btn btn-outline-danger" title="Xóa">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Phân trang -->
+            @if (Model.TotalPages > 1)
+            {
+                <div class="card-footer bg-light">
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination justify-content-center mb-0">
+                            <li class="page-item @(Model.PageNumber == 1 ? "disabled" : "")">
+                                <a class="page-link" asp-page="./Index" asp-route-pageNumber="@(Model.PageNumber - 1)" 
+                                    asp-route-searchTerm="@Model.SearchTerm" asp-route-brandId="@Model.BrandId"
+                                    asp-route-categoryId="@Model.CategoryId" asp-route-isApproved="@Model.IsApproved">
+                                    <i class="bi bi-chevron-left"></i>
+                                </a>
+                            </li>
+                            
+                            @for (int i = 1; i <= Model.TotalPages; i++)
+                            {
+                                <li class="page-item @(i == Model.PageNumber ? "active" : "")">
+                                    <a class="page-link" asp-page="./Index" asp-route-pageNumber="@i" 
+                                       asp-route-searchTerm="@Model.SearchTerm" asp-route-brandId="@Model.BrandId"
+                                       asp-route-categoryId="@Model.CategoryId" asp-route-isApproved="@Model.IsApproved">
+                                        @i
+                                    </a>
+                                </li>
+                            }
+                            
+                            <li class="page-item @(Model.PageNumber == Model.TotalPages ? "disabled" : "")">
+                                <a class="page-link" asp-page="./Index" asp-route-pageNumber="@(Model.PageNumber + 1)"
+                                   asp-route-searchTerm="@Model.SearchTerm" asp-route-brandId="@Model.BrandId"
+                                   asp-route-categoryId="@Model.CategoryId" asp-route-isApproved="@Model.IsApproved">
+                                    <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            }
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <!-- Thêm Bootstrap Icons CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    
+    <script>
+        // Tự động ẩn thông báo sau 5 giây
+        setTimeout(function () {
+            $('.alert').alert('close');
+        }, 5000);
+    </script>
+}

@@ -1,0 +1,56 @@
+﻿@page
+@model GotoCarRental.Areas.Customer.Pages.Reviews.IndexModel
+@{
+    ViewData["Title"] = "Đánh giá của tôi";
+}
+
+<div class="container py-5">
+    <h1 class="mb-4">Đánh giá của tôi</h1>
+
+    @if (!Model.Reviews.Any())
+    {
+        <div class="alert alert-info">
+            <p class="mb-0">Bạn chưa có đánh giá nào.</p>
+        </div>
+    }
+    else
+    {
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+            @foreach (var review in Model.Reviews)
+            {
+                <div class="col">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">@review.Car?.Name</h5>
+                            <div>
+                                @for (int i = 1; i <= 5; i++)
+                                {
+                                    if (i <= review.Rating)
+                                    {
+                                        <i class="bi bi-star-fill text-warning"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="bi bi-star text-warning"></i>
+                                    }
+                                }
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text">@review.Comment</p>
+                            <p class="card-text"><small class="text-muted">Đánh giá vào: @review.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small></p>
+                        </div>
+                        <div class="card-footer d-flex justify-content-between">
+                            <a asp-area="Customer" asp-page="/Cars/Details" asp-route-id="@review.CarId" class="btn btn-outline-primary">
+                                <i class="bi bi-car-front me-2"></i> Xem xe
+                            </a>
+                            <a asp-area="Customer" asp-page="/Reviews/Edit" asp-route-id="@review.Id" class="btn btn-outline-secondary">
+                                <i class="bi bi-pencil me-2"></i> Chỉnh sửa
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

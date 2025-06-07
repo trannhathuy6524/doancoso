@@ -1,0 +1,113 @@
+﻿@page
+@model GotoCarRental.Areas.Admin.Pages.Features.DetailsModel
+@{
+    ViewData["Title"] = $"Chi tiết tính năng: {Model.Feature.Name}";
+}
+
+<div class="container py-4">
+    <div class="row">
+        <div class="col-md-8">
+            <h1 class="display-6 fw-bold">Chi tiết tính năng</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-area="Admin" asp-page="/Index">Trang chủ</a></li>
+                    <li class="breadcrumb-item"><a asp-page="./Index">Tính năng xe</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Chi tiết</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="col-md-4 text-end">
+            <div class="btn-group">
+                <a asp-page="./Edit" asp-route-id="@Model.Feature.Id" class="btn btn-primary">
+                    <i class="bi bi-pencil me-2"></i> Chỉnh sửa
+                </a>
+                <button type="button" class="btn btn-outline-danger" onclick="confirmDelete(@Model.Feature.Id, '@Model.Feature.Name')">
+                    <i class="bi bi-trash me-2"></i> Xóa
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Thông tin tính năng</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">ID:</div>
+                        <div class="col-md-8">@Model.Feature.Id</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Tên tính năng:</div>
+                        <div class="col-md-8">@Model.Feature.Name</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Mô tả:</div>
+                        <div class="col-md-8">@(Model.Feature.Description ?? "Không có mô tả")</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 fw-bold">Số lượng xe có tính năng này:</div>
+                        <div class="col-md-8">@Model.CarsCount</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Thao tác</h5>
+                </div>
+                <div class="card-body">
+                    <a asp-page="./Index" class="btn btn-outline-secondary w-100 mb-2">
+                        <i class="bi bi-arrow-left me-2"></i> Quay lại danh sách
+                    </a>
+                    <a asp-page="./Edit" asp-route-id="@Model.Feature.Id" class="btn btn-primary w-100 mb-2">
+                        <i class="bi bi-pencil me-2"></i> Chỉnh sửa tính năng
+                    </a>
+                    <button type="button" class="btn btn-outline-danger w-100" onclick="confirmDelete(@Model.Feature.Id, '@Model.Feature.Name')">
+                        <i class="bi bi-trash me-2"></i> Xóa tính năng
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Xác nhận xóa -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Xác nhận xóa</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Bạn có chắc chắn muốn xóa tính năng <strong id="featureName"></strong>?</p>
+                <p class="text-danger">Lưu ý: Hành động này sẽ xóa tính năng khỏi tất cả xe đang sử dụng nó.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <form method="post" asp-page="./Index" asp-page-handler="Delete">
+                    <input type="hidden" id="featureIdToDelete" name="id" />
+                    <button type="submit" class="btn btn-danger">Xóa</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <script>
+        // Hàm xác nhận xóa
+        function confirmDelete(id, name) {
+            document.getElementById('featureName').textContent = name;
+            document.getElementById('featureIdToDelete').value = id;
+            var deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            deleteModal.show();
+        }
+    </script>
+}

@@ -1,0 +1,184 @@
+﻿
+
+/* Rental Form CSS */
+
+/* Step indicator styling */
+.step-number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background-color: #0d6efd;
+    color: white;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.rental-step {
+    position: relative;
+}
+
+.rental-step:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: 13px;
+    top: 28px;
+    height: calc(100% - 28px);
+    width: 2px;
+    background-color: #e9ecef;
+}
+
+/* Card styling for rental options */
+.rental-option-card {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.rental-option-card:hover {
+    border-color: #0d6efd;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+}
+
+.rental-option-card.selected {
+    border-color: #0d6efd;
+    background-color: rgba(13, 110, 253, 0.05);
+    box-shadow: 0 5px 15px rgba(13, 110, 253, 0.2);
+}
+
+.rental-option-card .form-check-input {
+    transform: scale(1.2);
+}
+
+/* Input styling */
+.rental-time-input {
+    border-left: none;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+/* Price breakdown styling */
+.price-breakdown {
+    background-color: #f8f9fa;
+    border-radius: 0.5rem;
+    padding: 1rem;
+}
+
+.price-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+
+.price-total {
+    font-weight: bold;
+    border-top: 1px solid #dee2e6;
+    padding-top: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+/* Trip option card styling */
+.trip-option-card {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    height: 100%;
+}
+
+.trip-option-card:hover {
+    border-color: #0d6efd;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+}
+
+.trip-option-card.selected {
+    border-color: #0d6efd;
+    background-color: rgba(13, 110, 253, 0.05);
+    box-shadow: 0 5px 15px rgba(13, 110, 253, 0.2);
+}
+
+.trip-option-card .form-check-input {
+    transform: scale(1.2);
+}
+
+/* Driver service options animation */
+#driverServiceOptions {
+    transition: all 0.4s ease;
+    max-height: 1500px;
+    overflow: hidden;
+    opacity: 1;
+}
+
+#driverServiceOptions.d-none {
+    max-height: 0;
+    opacity: 0;
+    margin: 0;
+    padding: 0;
+    pointer-events: none;
+}
+
+/* Form input styling */
+.form-check-input:checked {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+/* Utility classes */
+.cursor-pointer {
+    cursor: pointer;
+}
+
+/* Định dạng cho các ngày đã được đặt */
+.unavailable-date {
+    background-color: rgba(255, 0, 0, 0.25) !important;
+    color: #721c24 !important;
+}
+
+/* Định dạng cho các ngày được chọn */
+.selected-date {
+    background-color: rgba(0, 123, 255, 0.25) !important;
+    color: #004085 !important;
+    border-color: #0d6efd !important;
+}
+
+/* Đảm bảo lớp phủ nền có độ ưu tiên cao hơn */
+.fc-bg-event {
+    opacity: 0.6 !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .rental-form-container {
+        position: static;
+        margin-bottom: 2rem;
+    }
+}
+
+/* Định dạng cho các ngày không khả dụng */
+.unavailable-date,
+.fc-day-disabled,
+.fc-daygrid-day-bg .fc-bg-event {
+    background-color: rgba(255, 0, 0, 0.25) !important;
+    opacity: 1 !important;
+}
+
+/* Định dạng cho các ngày được chọn */
+.selected-date,
+.fc-event.selected-date {
+    background-color: rgba(0, 123, 255, 0.25) !important;
+    border-color: #0d6efd !important;
+}
+
+/* Đảm bảo độ trong suốt phù hợp */
+.fc-bg-event {
+    opacity: 0.65 !important;
+}
+
+/* Cải thiện hiển thị các ngày không khả dụng */
+.unavailable-date:hover,
+.fc-daygrid-day.unavailable-date:hover {
+    background-color: rgba(255, 0, 0, 0.4) !important;
+}

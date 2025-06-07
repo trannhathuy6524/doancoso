@@ -1,0 +1,72 @@
+﻿@page
+@model GotoCarRental.Areas.CarOwner.Pages.Debug.CheckFileModel
+@{
+    ViewData["Title"] = "Kiểm tra file";
+}
+
+<div class="container py-4">
+    <h1>Công cụ kiểm tra file</h1>
+    <p class="lead mb-4">Công cụ này giúp kiểm tra sự tồn tại và thông tin của file trên server.</p>
+    
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get">
+                <div class="mb-3">
+                    <label for="FilePath" class="form-label">Đường dẫn file (relative path từ wwwroot)</label>
+                    <input type="text" class="form-control" id="FilePath" name="FilePath" value="@Model.FilePath"
+                           placeholder="Ví dụ: models/3d/model3d_20250510180137/abc123.glb">
+                </div>
+                <button type="submit" class="btn btn-primary">Kiểm tra</button>
+            </form>
+        </div>
+    </div>
+    
+    @if (!string.IsNullOrEmpty(Model.FilePath))
+    {
+        <div class="card">
+            <div class="card-header">
+                Kết quả kiểm tra
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">Thông tin cơ bản</h5>
+                <div class="mb-4">
+                    <p><strong>Đường dẫn tương đối:</strong> /@Model.FilePath</p>
+                    <p><strong>Thư mục gốc (wwwroot):</strong> @Model.WebRootPath</p>
+                    <p><strong>Đường dẫn đầy đủ:</strong> @Model.FullPath</p>
+                    <p><strong>File tồn tại:</strong> <span class="badge @(Model.FileExists ? "bg-success" : "bg-danger")">@(Model.FileExists ? "Có" : "Không")</span></p>
+                </div>
+                
+                @if (Model.FileExists)
+                {
+                    <h5>Chi tiết file</h5>
+                    <div class="mb-4">
+                        <p><strong>Kích thước:</strong> @(Model.FileSize.HasValue ? $"{Model.FileSize / 1024.0:F2} KB" : "N/A")</p>
+                        <p><strong>Ngày chỉnh sửa cuối:</strong> @(Model.LastModified.HasValue ? Model.LastModified.Value.ToString("dd/MM/yyyy HH:mm:ss") : "N/A")</p>
+                        <p><strong>Kiểu nội dung:</strong> @Model.ContentType</p>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <a href="/@Model.FilePath" target="_blank" class="btn btn-sm btn-outline-primary">Mở file</a>
+                    </div>
+                }
+                else if (!string.IsNullOrEmpty(Model.ErrorMessage))
+                {
+                    <div class="alert alert-danger">
+                        <h5 class="alert-heading">Lỗi!</h5>
+                        <p>@Model.ErrorMessage</p>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <h5 class="alert-heading">Cách khắc phục</h5>
+                        <ol>
+                            <li>Kiểm tra lại đường dẫn file</li>
+                            <li>Đảm bảo folder models/3d đã được tạo trong wwwroot</li>
+                            <li>Kiểm tra quyền truy cập folder</li>
+                            <li>Thử tạo lại mô hình 3D</li>
+                        </ol>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+</div>

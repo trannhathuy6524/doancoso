@@ -1,0 +1,85 @@
+﻿@page
+@model ExternalLoginModel
+@{
+    ViewData["Title"] = "Đăng ký";
+}
+
+<div class="container py-5">
+    <div class="text-center mb-4 hero-section">
+        <h1 class="display-4 fw-bold text-gradient">Kết nối với @Model.ProviderDisplayName</h1>
+        <p class="lead text-muted">Liên kết tài khoản @Model.ProviderDisplayName của bạn với GotoCarRental</p>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold border-start border-primary ps-2 mb-4">Hoàn tất thông tin đăng ký</h5>
+                    <div class="mb-4">
+                        <p>
+                            Bạn đã đăng nhập thành công bằng <strong>@Model.ProviderDisplayName</strong>.
+                            Vui lòng nhập email bên dưới để hoàn tất quá trình đăng ký, sau đó click vào nút Đăng ký.
+                        </p>
+                    </div>
+
+                    <form asp-page-handler="Confirmation" asp-route-returnUrl="@Model.ReturnUrl" method="post">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                        <div class="form-floating mb-4">
+                            <input asp-for="Input.Email" class="form-control" autocomplete="email" placeholder="Email" />
+                            <label asp-for="Input.Email">Email</label>
+                            <span asp-validation-for="Input.Email" class="text-danger"></span>
+                        </div>
+                        <!-- Thêm vào form sau input email -->
+                        <div class="form-floating mb-4">
+                            <input asp-for="Input.FullName" class="form-control" placeholder="Họ và tên" />
+                            <label asp-for="Input.FullName">Họ và tên</label>
+                            <span asp-validation-for="Input.FullName" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-floating mb-4">
+                            <select asp-for="Input.UserType" class="form-select">
+                                <option value="Customer">Khách hàng</option>
+                                <option value="CarOwner">Chủ xe</option>
+                            </select>
+                            <label asp-for="Input.UserType">Loại tài khoản</label>
+                            <span asp-validation-for="Input.UserType" class="text-danger"></span>
+                        </div>
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-person-check-fill me-2"></i>Đăng ký
+                            </button>
+                            <div class="text-center mt-3">
+                                <a asp-page="./Login" class="text-primary">Quay lại đăng nhập</a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .hero-section {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        padding: 2rem;
+        border-radius: 0.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .text-gradient {
+        background: linear-gradient(45deg, #007bff, #00d4ff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .btn-primary {
+        background: linear-gradient(45deg, #007bff, #00d4ff);
+        border: none;
+    }
+</style>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+}
